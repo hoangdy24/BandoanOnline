@@ -1,0 +1,142 @@
+﻿@using Newtonsoft.Json
+@using QlW_BandoanOnline.Models.ViewModels
+@{
+    ViewData["Title"] = "Thực đơn của chúng tôi";
+}
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Be+Vietnam+Pro:wght@400;500;700&family=Fredoka+One&display=swap" rel="stylesheet">
+<link href="~/css/Thucdon.css" rel="stylesheet" />
+<link rel="preload" href="/images/Gui/TrangThucDon/Background.png" as="image">
+
+<section class="hero" id="home" style="background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), url('/images/Gui/TrangThucDon/Background.png');">
+    <div class="container">
+        <h1 style="color: White;">Thức ăn ngon, giao hàng nhanh</h1>
+        <p>Đặt hàng trực tuyến và nhận ngay tại nhà chỉ trong 30 phút</p>
+        <a href="#menu" class="btn">Xem thực đơn</a>
+    </div>
+</section>
+
+<section class="menu-section" id="menu">
+    <div class="container">
+        <h2 class="section-title">Thực đơn của chúng tôi</h2>
+        <div class="menu-filters">
+            <a asp-action="Index" asp-controller="Thucdon"
+               class="filter-btn @(ViewBag.CurrentCategory == null ? "active" : "")">
+                Tất cả
+            </a>
+            @foreach (var item in ViewBag.DanhMuc)
+            {
+                <a asp-action="Index" asp-controller="Thucdon"
+                   asp-route-MaDanhMuc="@item.MaDanhMuc"
+                   asp-route-page="1"
+                   class="filter-btn @(item.MaDanhMuc == ViewBag.CurrentCategory ? "active" : "")">
+                    @item.TenDanhMuc
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<div class="menu-grid" id="menuGrid">
+    @model List<QlW_BandoanOnline.Models.SanPham>
+    @if (Model.Any())
+    {
+        @foreach (var item in Model)
+        {
+            <div class="menu-item">
+                <a href="@Url.Action("ChiTietSanPham", "Thucdon", new { id = item.MaSanPham })">
+                    <img src="~/images/Menu/@item.HinhAnh" alt="@item.HinhAnh">
+                    <div class="menu-item-content">
+                        <h3 class="menu-item-title">@item.TenSanPham</h3>
+                        <p class="menu-item-desc">@item.MoTa?.Substring(0, Math.Min(item.MoTa.Length, 100))...</p>
+                        <div class="menu-item-price">@item.GiaBan.ToString("N0") đ</div>
+                    @{
+                        var model = new ThemGioHangViewModel { MaSanPham = item.MaSanPham };
+                    }
+                    @await Html.PartialAsync("_ThemGioHangDon", model)
+                    </div>
+                </a>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="no-products">
+            <p>Không có sản phẩm nào trong danh mục này.</p>
+        </div>
+    }
+</div>
+
+@if (ViewBag.TotalPages > 1)
+{
+    <div class="pagination-container">
+        <ul class="pagination">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-controller="Thucdon"
+                       asp-route-MaDanhMuc="@ViewBag.CurrentCategory"
+                       asp-route-page="@(ViewBag.CurrentPage - 1)">«</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">«</a>
+                </li>
+            }
+
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-controller="Thucdon"
+                       asp-route-MaDanhMuc="@ViewBag.CurrentCategory"
+                       asp-route-page="@i">@i</a>
+                </li>
+            }
+
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-controller="Thucdon"
+                       asp-route-MaDanhMuc="@ViewBag.CurrentCategory"
+                       asp-route-page="@(ViewBag.CurrentPage + 1)">»</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">»</a>
+                </li>
+            }
+        </ul>
+    </div>
+}
+<br />
+<section class="about-section" id="about">
+    <div class="container about-container">
+        <div class="about-img">
+            <img src="/images/Gui/TrangThucDon/X.png" alt="Về FastFood">
+        </div>
+        <div class="about-content">
+            <h2>Về chúng tôi</h2>
+            <p><span style="color: #ff6b35;font-weight: bold;">Food 'BCTECH'</span> – lựa chọn hàng đầu cho sinh viên cao đẳng! Chúng tôi mang đến những phần ăn nhanh ngon - gọn - rẻ ngay tại căn tin trường.</p>
+            <p>Từ burger đậm vị, gà rán giòn rụm đến khoai chiên vàng ươm, mọi món ăn đều được chế biến nhanh chóng, hợp khẩu vị sinh viên và giá cả "hạt dẻ".</p>
+            <p>Team BCTECH luôn sẵn sàng phục vụ với tiêu chí: Giao tận tay – nóng hổi vừa thổi vừa ăn – thân thiện như người quen. Học hành căng thẳng? Ghé căn tin làm ngay combo siêu ngon nhé!</p>
+            <a href="#contact" class="btn">Liên hệ ngay</a>
+        </div>
+    </div>
+</section>
+<br />
+<script src="~/js/Thucdon.js"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const img = new Image();
+        img.src = '/images/Gui/TrangThucDon/Background.png';
+    });
+</script>

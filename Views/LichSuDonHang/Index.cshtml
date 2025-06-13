@@ -1,0 +1,78 @@
+﻿@model IEnumerable<QlW_BandoanOnline.Models.DonHang>
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+<link href="~/css/LichSuDonHang.css" rel="stylesheet" />
+
+<main>
+    <div class="container">
+        <div class="page-title">
+            <h1>Lịch sử đơn hàng</h1>
+        </div>
+
+        <div class="filter-section">
+            <form method="get">
+                <div class="filter-row">
+                    <div class="filter-col">
+                        <label class="filter-label">Trạng thái đơn hàng</label>
+                        <select class="filter-input" name="status">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="completed">Đã hoàn thành</option>
+                            <option value="processing">Đang xử lý</option>
+                            <option value="delivering">Đang giao hàng</option>
+                            <option value="cancelled">Đã hủy</option>
+                        </select>
+                    </div>
+                    <div class="filter-col">
+                        <label class="filter-label">Từ ngày</label>
+                        <input type="date" class="filter-input" name="from_date" />
+                    </div>
+                    <div class="filter-col">
+                        <label class="filter-label">Đến ngày</label>
+                        <input type="date" class="filter-input" name="to_date" />
+                    </div>
+                    <div class="filter-col">
+                        <label class="filter-label">Tìm kiếm theo mã đơn</label>
+                        <input type="text" class="filter-input" name="search" placeholder="Nhập mã đơn hàng..." />
+                    </div>
+                </div>
+                <div class="filter-buttons">
+                    <button type="reset" class="btn btn-outline">Đặt lại</button>
+                    <button type="submit" class="btn btn-primary">Áp dụng</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="orders-list">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Phương thức</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var don in Model)
+                    {
+                        <tr>
+                            <td class="order-id">@don.MaDonHangPublic</td>
+                            <td>@don.ThoiGianDatHang.ToString("dd/MM/yyyy")</td>
+                            <td>@((don.TongTien + 20000).ToString("N0")) đ</td>
+                            <td><span class="order-status">@don.TrangThai</span></td>
+                            <td>@don.PhuongThucThanhToan</td>
+                            <td>
+                                <a href="@Url.Action("DonHang", "LichSuDonHang", new { id = don.MaDonHang })" class="action-btn view-btn">
+                                    Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>

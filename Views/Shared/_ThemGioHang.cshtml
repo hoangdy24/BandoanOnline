@@ -1,0 +1,155 @@
+﻿@using QlW_BandoanOnline.Models.ViewModels
+@model ThemGioHangViewModel
+<form id="addToCartForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaSanPham" />
+    <input type="hidden" asp-for="TuyChonJson" />
+    <h3 class="section-title">Số lượng:</h3>
+    <div class="quantity-section">
+        <div class="quantity-controls">
+            <button type="button" class="quantity-btn" id="decreaseBtn">-</button>
+            <input type="number" asp-for="SoLuong" min="1" class="quantity-input" value="1" />
+            <button type="button" class="quantity-btn" id="increaseBtn">+</button>
+        </div>
+    </div>
+
+    <h3 class="section-title">Ghi chú:</h3>
+    <div class="note-section">
+        <textarea asp-for="GhiChu" class="note-input" id="noteInput" placeholder="Thêm ghi chú cho đơn hàng của bạn..."></textarea>
+    </div>
+
+    <div class="total-price">Tổng: <span id="totalPrice"></span></div>
+
+    <button type="submit" class="add-to-cart-btn" id="addToCartBtn">
+        <span>Thêm vào giỏ hàng</span>
+    </button>
+</form>
+
+<script>
+    function formatCurrency(amount) {
+        return amount.toLocaleString('vi-VN') + ' ₫';
+    }
+
+    function updateTuyChon() {
+        const basePrice = parseFloat($('#basePrice').data('base-price')) || 0;
+        let extraSize = 0;
+        let extraTopping = 0;
+        let tuyChons = [];
+
+        // Lấy size được chọn
+        const selectedOption = document.querySelector('.size-option.selected');
+        if (selectedOption) {
+            document.getElementById('selected-size').value = selectedOption.dataset.value;
+            extraSize = parseFloat(selectedOption.dataset.price) || 0;
+
+            tuyChons.push({
+                TenTuyChon: "Size",
+                LuaChon: selectedOption.innerText.trim(),
+                GiaThem: extraSize
+            });
+        }
+
+        // Lấy topping được chọn
+        $('.topping-checkbox:checked').each(function () {
+            const price = parseFloat($(this).data('price')) || 0;
+            tuyChons.push({
+                TenTuyChon: $(this).data('name'),
+                LuaChon: $(this).val(),
+                GiaThem: price
+            });
+            extraTopping += price;
+        });
+
+        $('#TuyChonJson').val(JSON.stringify(tuyChons));
+
+        const quantity = parseInt($('.quantity-input').val()) || 1;
+        const total = (basePrice + extraSize + extraTopping) * quantity;
+
+        $('#totalPrice').text(formatCurrency(total));
+    }
+
+    $(document).ready(function () {
+        // Chọn size
+        $(document).on('click', '.size-option', function () {
+            $('.size-option').removeClass('selected');
+            $(this).addClass('selected');
+            updateTuyChon();
+        });
+
+        // Topping thay đổi
+        $(document).on('change', '.topping-checkbox', updateTuyChon);
+
+        // Số lượng thay đổi
+        $('.quantity-input').on('input change', updateTuyChon);
+
+        // Nút tăng giảm
+        $('#increaseBtn').click(function () {
+            let current = parseInt($('.quantity-input').val()) || 1;
+            $('.quantity-input').val(current + 1).trigger('change');
+        });
+
+        $('#decreaseBtn').click(function () {
+            let current = parseInt($('.quantity-input').val()) || 1;
+            if (current > 1) {
+                $('.quantity-input').val(current - 1).trigger('change');
+            }
+        });
+
+        // Xử lý submit form bằng Ajax
+        $('#addToCartForm').submit(function(e) {
+            e.preventDefault();
+
+            // Thêm trạng thái loading cho nút
+            const btn = $('#addToCartBtn');
+            btn.prop('disabled', true);
+            btn.find('span').text('Đang thêm...');
+
+            $.ajax({
+                url: '@Url.Action("Them", "GioHang")',
+                type: 'POST',
+                data: $(this).serialize(),
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Hiển thị toast
+                        toastr.success(response.message);
+
+                        // Cập nhật số lượng giỏ hàng qua SignalR
+                        if (typeof connection !== 'undefined' && connection.state === 'Connected') {
+                            connection.invoke("UpdateCartCount", response.cartCount);
+                        }
+
+                        // Đóng modal nếu có
+                        if (typeof closeModal === 'function') {
+                            closeModal();
+                        }
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    toastr.error('Có lỗi xảy ra khi thêm vào giỏ hàng');
+                },
+                complete: function() {
+                    // Khôi phục trạng thái nút
+                    btn.prop('disabled', false);
+                    btn.find('span').text('Thêm vào giỏ hàng');
+                }
+            });
+        });
+
+        // Khởi tạo toastr
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: 3000,
+            preventDuplicates: true
+        };
+
+        // Gọi 1 lần để khởi tạo giá trị đúng
+        updateTuyChon();
+    });
+</script>

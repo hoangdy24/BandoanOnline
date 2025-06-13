@@ -1,0 +1,55 @@
+﻿@model IEnumerable<QlW_BandoanOnline.Models.DonHang>
+
+@{
+    ViewData["Title"] = "Danh sách đơn hàng";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mã đơn</th>
+            <th>Khách hàng</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>PTTT</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MaDonHangPublic</td>
+                <td>@item.HoTenKhach</td>
+                <td>@item.ThoiGianDatHang.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@item.TongTien.ToString("N0") đ</td>
+                <td>@item.PhuongThucThanhToan</td>
+                <td>
+                    <span class="badge @GetStatusClass(item.TrangThai)">
+                        @item.TrangThai
+                    </span>
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@functions {
+    string GetStatusClass(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.DaXacNhan => "bg-primary",
+            TrangThaiDonHang.DangGiaoHang => "bg-warning",
+            TrangThaiDonHang.DaGiaoThanhCong => "bg-success",
+            TrangThaiDonHang.DaHuy => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}

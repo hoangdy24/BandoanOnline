@@ -1,0 +1,138 @@
+﻿@model QlW_BandoanOnline.Models.DonHang
+@using System.Globalization
+@using Newtonsoft.Json
+@{
+    ViewData["Title"] = "Đơn hàng" + Model.MaDonHangPublic;
+}
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa Đơn - @Model.MaDonHangPublic</title>
+    <link href="~/css/HoaDon.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container3">
+        <div class="header">
+            <h1>HÓA ĐƠN BCTECH FAST FOOD</h1>
+            <p>Hóa Đơn Thức Ăn Nhanh</p>
+            <p>@Model.ThoiGianDatHang.ToString("dddd, dd MMMM yyyy HH:mm")</p>
+            <p>Mã đơn hàng: #@Model.MaDonHangPublic</p>
+        </div>
+
+        <div class="customer-info">
+            <h3>Thông tin khách hàng</h3>
+            <div class="info-row"><strong style="padding-right: 5px;">Họ tên: </strong> @Model.HoTenKhach</div>
+            <div class="info-row"><strong style="padding-right: 5px;">Số điện thoại: </strong> @Model.SoDienThoai</div>
+            <div class="info-row"><strong style="padding-right: 5px;">Email: </strong> @Model.Email</div>
+            <div class="info-row"><strong style="padding-right: 5px;">Địa chỉ giao hàng: </strong> @Model.DiaChiGiaoHang</div>
+        </div>
+
+        <div class="order-items">
+            <h3>Chi tiết đơn hàng</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Món ăn</th>
+                        <th width="80">Số lượng</th>
+                        <th width="80">Đơn giá</th>
+                        <th width="80">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        decimal tongTienSanPham = 0;
+                    }
+                    @for (int i = 0; i < Model.ChiTietDonHang.Count; i++)
+                    {
+                        var item = Model.ChiTietDonHang.ElementAt(i);
+                        decimal tongGiaTuyChon = 0;
+
+                        if (!string.IsNullOrWhiteSpace(item.TuyChonThem))
+                        {
+                            var options = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(item.TuyChonThem.Replace("\n", " ").Trim());
+                            // Sử dụng Convert.ToDecimal thay vì ép kiểu ngầm định
+                            tongGiaTuyChon = options.Sum(opt =>
+                            {
+                                decimal giaThem;
+                                if (opt.GiaThem is int)
+                                {
+                                    giaThem = Convert.ToDecimal((int)opt.GiaThem);
+                                }
+                                else
+                                {
+                                    giaThem = Convert.ToDecimal(opt.GiaThem);
+                                }
+                                return giaThem;
+                            });
+                        }
+
+                        // Tính thành tiền
+                        decimal thanhTien = (item.DonGia + tongGiaTuyChon) * item.SoLuong;
+                        tongTienSanPham += thanhTien;
+
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>
+                                @item.TenSanPham
+                                @if (!string.IsNullOrWhiteSpace(item.TuyChonThem))
+                                {
+                                    var options = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(item.TuyChonThem.Replace("\n", " ").Trim());
+                                    <ul style="font-size: smaller; color: gray; margin: 4px 0 0 0; padding-left: 15px;">
+                                        @foreach (var opt in options)
+                                        {
+                                            <li>
+                                                @if (opt.TenTuyChon != null)
+                                                {
+                                                    <span>@opt.TenTuyChon</span>
+                                                }
+                                                @if (opt.GiaThem > 0)
+                                                {
+                                                    <span> (+@Convert.ToDecimal(opt.GiaThem).ToString("N0") đ)</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </td>
+                            <td>@item.SoLuong</td>
+                            <td>@string.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:c0}", item.DonGia + tongGiaTuyChon)</td>
+                            <td>@string.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:c0}", thanhTien)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="notes">
+            <h3>Ghi chú</h3>
+            <p>@Model.GhiChuDiaChi</p>
+        </div>
+
+        <div class="total-section">
+            <div class="total-row"><strong style="padding-right: 5px;">Tạm tính:</strong> @string.Format(new CultureInfo("vi-VN"), "{0:c0}", tongTienSanPham)</div>
+            <div class="total-row"><strong style="padding-right: 5px;">Phí giao hàng:</strong> 20.000 đ</div>
+            @*<div class="total-row"><strong style="padding-right: 5px;">Giảm giá:</strong> @string.Format(new CultureInfo("vi-VN"), "{0:c0}", Model.TienGiamGia)</div>*@
+            <div class="total-row grand-total">
+                <strong>Tổng cộng:</strong>
+                @{
+                    var phiGiao = 20000;
+                    var tong = tongTienSanPham + phiGiao;
+                }
+                @string.Format(new CultureInfo("vi-VN"), "{0:c0}", tong)
+            </div>
+        </div>
+
+        <button class="btn-print" onclick="window.print()">In hóa đơn</button>
+
+        <div class="footer">
+            <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</p>
+            <p>Hotline: 1900-1234 | Website: www.fastfoodexpress.com</p>
+        </div>
+    </div>
+</body>
+</html>

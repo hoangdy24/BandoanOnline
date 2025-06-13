@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Không tìm thấy trang";
+}
+    <link href="~/css/404.css" rel="stylesheet" />
+    <div class="container3">
+        <h1 class="not-found-text">404</h1>
+        <h2>Oops! Món ăn này không tìm thấy</h2>
+        
+        <div class="food-animation">
+            <div class="plate"></div>
+            <div class="food food-1"></div>
+            <div class="food food-2"></div>
+            <div class="food food-3"></div>
+            <div class="food food-4"></div>
+            <div class="food food-5"></div>
+            <div class="fork"></div>
+            <div class="spoon"></div>
+        </div>
+        
+        <p>Có vẻ như món ăn bạn đang tìm kiếm đã biến mất khỏi thực đơn của chúng tôi hoặc đã được đầu bếp mang đi mất rồi!</p>
+        
+        <a asp-action="Index" asp-controller="Home" class="btn">Quay lại thực đơn chính</a>
+    </div>
+    
+    <!-- Floating food elements for background decoration -->
+    <div class="floating-food floating-food-1"></div>
+    <div class="floating-food floating-food-2"></div>
+    <div class="floating-food floating-food-3"></div>
+    <div class="floating-food floating-food-4"></div>
+    
+    <script>
+        // Add some interactive effects when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add more floating food elements dynamically
+            const body = document.querySelector('body');
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const food = document.createElement('div');
+                    food.className = 'floating-food';
+                    
+                    // Random size
+                    const size = Math.floor(Math.random() * 30) + 10;
+                    food.style.width = `${size}px`;
+                    food.style.height = `${size}px`;
+                    
+                    // Random position
+                    food.style.top = `${Math.random() * 80 + 10}%`;
+                    food.style.left = `${Math.random() * 80 + 10}%`;
+                    
+                    // Random shape
+                    const shapeNum = Math.floor(Math.random() * 3);
+                    if (shapeNum === 0) {
+                        food.style.borderRadius = '50%';
+                    } else if (shapeNum === 1) {
+                        food.style.borderRadius = '5px';
+                    } else {
+                        food.style.borderRadius = '50% 50% 0 0';
+                    }
+                    
+                    // Random color
+                    const colors = ['#ffd166', '#ef476f', '#06d6a0', '#118ab2', '#ff9e00'];
+                    food.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    // Random animation
+                    const duration = Math.floor(Math.random() * 5) + 5;
+                    const delay = Math.random() * 2;
+                    food.style.animation = `float ${duration}s ease-in-out infinite ${delay}s, rotate ${duration * 3}s linear infinite ${Math.random() > 0.5 ? '' : 'reverse'}`;
+                    
+                    body.appendChild(food);
+                }, i * 200);
+            }
+            
+            // Add a wobble effect to the 404 text when clicked
+            const heading = document.querySelector('h1');
+            heading.addEventListener('click', function() {
+                this.style.animation = 'shake 0.5s ease-in-out';
+                
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 500);
+            });
+            
+            // Add hover effect for the plate
+            const plate = document.querySelector('.plate');
+            plate.addEventListener('mouseenter', function() {
+                const foods = document.querySelectorAll('.food');
+                foods.forEach(food => {
+                    const currentAnimation = food.style.animation;
+                    food.style.animation = 'shake 0.3s ease-in-out infinite';
+                    
+                    setTimeout(() => {
+                        food.style.animation = currentAnimation;
+                    }, 1000);
+                });
+            });
+        });
+    </script>

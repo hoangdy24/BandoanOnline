@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+@model DonHang
+<link href="~/css/TrangThaiThanhToanVNPAY.css" rel="stylesheet" />
+<div class="payment-container">
+    <div class="payment-card">
+        <div class="payment-header success">
+            <div class="success-celebration">
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+            </div>
+            <div class="payment-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1 class="payment-title" style="color: white;">
+                @(Model.PhuongThucThanhToan == PhuongThucThanhToan.TienMat ? "Đặt hàng thành công!" : "Thanh toán thành công!")
+            </h1>
+            <p class="payment-subtitle">
+                @(Model.PhuongThucThanhToan == PhuongThucThanhToan.TienMat
+                    ? "🧾 Đơn hàng của bạn đã được ghi nhận. Vui lòng thanh toán khi nhận hàng."
+                    : "🎉 Đơn hàng của bạn đã được xác nhận" )
+            </p>
+        </div>
+
+        <div class="payment-body">
+            <div class="order-info">
+                <div class="order-id">
+                    <i class="fas fa-receipt"></i>
+                    Mã đơn hàng: #@ViewBag.MaDonHangPublic
+                </div>
+                <div class="order-details">
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <strong>Thời gian:</strong><br>
+                            @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <strong>Trạng thái:</strong><br>
+                            Chờ xác nhận
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center" style="margin: var(--spacing-lg) 0; color: var(--gray-color);">
+                <p>
+                    <i class="fas fa-utensils" style="color: var(--primary-color); margin-right: 8px;"></i>
+                    Cảm ơn bạn đã tin tưởng Food BCTECH!
+                </p>
+                <p>Đơn hàng sẽ được chuẩn bị trong <strong>15-20 phút</strong> và giao đến bạn sớm nhất.</p>
+            </div>
+
+            <div class="payment-actions">
+                <a asp-action="ChiTiet" asp-controller="TheoDoiDonHang" asp-route-id="@ViewBag.OrderId" class="payment-btn primary">
+                    <i class="fas fa-search"></i>
+                    Theo dõi đơn hàng
+                </a>
+                <a asp-controller="Thucdon" asp-action="Index" class="payment-btn outline">
+                    <i class="fas fa-shopping-cart"></i>
+                    Đặt thêm món
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="payment-btn secondary">
+                    <i class="fas fa-home"></i>
+                    Về trang chủ
+                </a>
+            </div>
+
+            <div class="support-info">
+                <h5 class="support-title">
+                    <i class="fas fa-headset"></i>
+                    Hỗ trợ khách hàng 24/7
+                </h5>
+                <ul class="support-list">
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span>Hotline: <strong>(0254) 3.583.545</strong></span>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <span>Email: <strong>info@bctech.edu.vn</strong></span>
+                    </li>
+                    <li>
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook: <strong>Trường Cao đẳng Kỹ thuật Công nghệ Bà Rịa - Vũng Tàu</strong></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

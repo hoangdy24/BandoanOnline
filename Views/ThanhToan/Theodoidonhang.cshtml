@@ -1,0 +1,370 @@
+﻿@model QlW_BandoanOnline.Models.DonHang
+@using QlW_BandoanOnline.Models
+@{
+    ViewData["Title"] = "Theo dõi đơn hàng";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/css/Theodoidonhang.css" rel="stylesheet" />
+    <link href="~/css/Template.css" rel="stylesheet" />
+    <title>Theo dõi đơn hàng</title>
+    <style>
+        .order-status {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-timeline {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            position: relative;
+        }
+
+            .status-timeline::before {
+                content: '';
+                position: absolute;
+                top: 15px;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background-color: #e0e0e0;
+                z-index: 1;
+            }
+
+            .status-timeline .progress-line {
+                position: absolute;
+                top: 15px;
+                left: 0;
+                height: 4px;
+                background-color: #4CAF50;
+                z-index: 2;
+                transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            }
+
+        .status-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 3;
+            width: 25%;
+        }
+
+        .step-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .step-active .step-icon,
+        .step-completed .step-icon {
+            background-color: #4CAF50;
+            color: white;
+            transform: scale(1.2);
+            box-shadow: 0 4px 8px rgba(76,175,80,0.3);
+        }
+
+        .step-completed .step-icon {
+            animation: pulse 1s cubic-bezier(0.66, 0, 0.33, 1) forwards;
+        }
+
+        .step-failed .step-icon {
+            background-color: #f44336;
+            color: white;
+            transform: scale(1.2);
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+            box-shadow: 0 4px 8px rgba(244,67,54,0.3);
+        }
+
+        .step-label {
+            font-size: 14px;
+            text-align: center;
+            color: #757575;
+            font-weight: 500;
+            transition: all 0.5s ease;
+            opacity: 0.7;
+        }
+
+        .step-active .step-label,
+        .step-completed .step-label {
+            color: #333;
+            font-weight: 600;
+            opacity: 1;
+        }
+
+        .step-failed .step-label {
+            color: #f44336;
+            font-weight: 600;
+            opacity: 1;
+        }
+
+        /* Animation cho số */
+        .step-icon {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .step-completed .step-icon::before {
+            content: '✓';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: slideIn 0.5s forwards;
+        }
+
+        /* Hiệu ứng sáng lấp lánh khi hoàn thành */
+        .step-completed .step-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            animation: sparkle 1s ease-out 0.2s forwards;
+        }
+
+        /* Animation cho trạng thái hiện tại */
+        .status-current {
+            animation: highlight 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Theo dõi đơn hàng</h1>
+            <p>Kiểm tra trạng thái đơn hàng của bạn</p>
+        </div>
+
+        <div class="tracking-results">
+            <div class="order-info">
+                <h2>Thông tin đơn hàng #@Model.MaDonHangPublic</h2>
+                <p><strong>Ngày đặt:</strong>@DateTime.Now</p>
+                <p><strong>Tên khách hàng:</strong> @Model.HoTenKhach</p>
+                <p><strong>Địa chỉ giao hàng:</strong> @Model.DiaChiGiaoHang</p>
+                <p><strong>Số điện thoại:</strong> @Model.SoDienThoai</p>
+                <p><strong>Email:</strong> @Model.Email</p>
+            </div>
+
+            <div class="order-status">
+                <h3>Trạng thái đơn hàng</h3>
+                <p>
+                    <strong>Hiện tại:</strong>
+                    <span style="color: @GetOrderStatusColor(Model.TrangThai)">
+                        @GetOrderStatusText(Model.TrangThai)
+                    </span>
+                </p>
+
+                <div class="status-timeline">
+                    <div id="progress-line" class="progress-line"></div>
+
+                    <div class="status-step @GetStatusClass(Model.TrangThai, TrangThaiDonHang.ChoXacNhan)">
+                        <div class="step-icon"></div>
+                        <div class="step-label">Chờ xác nhận</div>
+                    </div>
+                    <div class="status-step @GetStatusClass(Model.TrangThai, TrangThaiDonHang.DangChuanBi)">
+                        <div class="step-icon"></div>
+                        <div class="step-label">Đang chuẩn bị</div>
+                    </div>
+                    <div class="status-step @GetStatusClass(Model.TrangThai, TrangThaiDonHang.DangGiaoHang)">
+                        <div class="step-icon"></div>
+                        <div class="step-label">Đang giao hàng</div>
+                    </div>
+
+                    @if (Model.TrangThai == TrangThaiDonHang.DaHuy)
+                    {
+                        <div class="status-step step-failed">
+                            <div class="step-icon">✕</div>
+                            <div class="step-label">Giao hàng thất bại</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="status-step @GetStatusClass(Model.TrangThai, TrangThaiDonHang.DaGiaoThanhCong)">
+                            <div class="step-icon">✓</div>
+                            <div class="step-label">Đã giao thành công</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="order-details">
+                <h3>Chi tiết đơn hàng</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ChiTietDonHang)
+                        {
+                            <tr>
+                                <td>@item.TenSanPham</td>
+                                <td>@item.SoLuong</td>
+                                <td>@item.DonGia.ToString("N0")</td>
+                                <td>@((item.SoLuong * item.DonGia).ToString("N0")) đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"><strong>Tổng tiền sản phẩm:</strong></td>
+                            <td>@Model.TongTien.ToString("N0") đ</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><strong>Phí vận chuyển:</strong></td>
+                            <td>20.000 đ</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><strong>Tổng thanh toán:</strong></td>
+                            <td>@((Model.TongTien + 20000).ToString("N0")) đ</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation cho progress line
+            const progressLine = document.getElementById('progress-line');
+            const progressPercentage = @GetProgressPercentage(Model.TrangThai);
+
+            // Bắt đầu với width 0 và animate tới giá trị thực
+            progressLine.style.width = '0%';
+
+            setTimeout(() => {
+                progressLine.style.width = progressPercentage + '%';
+            }, 300);
+
+            // Thêm animation cho các step đã hoàn thành
+            const completedSteps = document.querySelectorAll('.step-completed');
+            completedSteps.forEach((step, index) => {
+                setTimeout(() => {
+                    step.classList.add('animate-completed');
+                }, 300 + (index * 200));
+            });
+
+            // Thêm hiệu ứng nổi bật cho step hiện tại
+            const activeStep = document.querySelector('.step-active');
+            if (activeStep) {
+                setTimeout(() => {
+                    activeStep.querySelector('.step-icon').classList.add('status-current');
+                }, 1500);
+            }
+
+            // Thêm hiệu ứng shake cho step thất bại (nếu có)
+            const failedStep = document.querySelector('.step-failed');
+            if (failedStep) {
+                setTimeout(() => {
+                    failedStep.classList.add('animate-failed');
+                }, 1500);
+            }
+
+            // Mô phỏng cập nhật trạng thái (demo)
+            // Bình thường phần này sẽ được xử lý phía server khi có cập nhật thực tế
+            window.updateOrderStatus = function(newStatus) {
+                const currentPercentage = parseInt(progressLine.style.width);
+                let targetPercentage;
+
+                switch(newStatus) {
+                    case 'ChoXacNhan': targetPercentage = 0; break;
+                    case 'DangChuanBi': targetPercentage = 33; break;
+                    case 'DangGiaoHang': targetPercentage = 66; break;
+                    case 'DaGiaoThanhCong': targetPercentage = 100; break;
+                    case 'GiaoHangThatBai': targetPercentage = 66; break;
+                    default: targetPercentage = currentPercentage;
+                }
+
+                // Cài đặt biến CSS tùy chỉnh cho animation
+                progressLine.style.setProperty('--start-width', currentPercentage + '%');
+                progressLine.style.setProperty('--end-width', targetPercentage + '%');
+
+                // Thêm class animation và xóa sau khi hoàn thành
+                progressLine.classList.add('animate-progress');
+
+                // Cập nhật trạng thái UI khác nếu cần
+                // Phần này sẽ phức tạp hơn trong ứng dụng thực tế và có thể cần refresh trang
+                // hoặc update DOM thông qua AJAX
+            }
+        });
+    </script>
+</body>
+</html>
+
+@functions {
+    string GetOrderStatusColor(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.DaGiaoThanhCong => "#4CAF50",
+            TrangThaiDonHang.DaHuy => "#f44336",
+            _ => "#2196F3"
+        };
+    }
+
+    string GetOrderStatusText(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => "Chờ xác nhận",
+            TrangThaiDonHang.DangChuanBi => "Đang chuẩn bị",
+            TrangThaiDonHang.DangGiaoHang => "Đang giao hàng",
+            TrangThaiDonHang.DaGiaoThanhCong => "Đã giao thành công",
+            TrangThaiDonHang.DaHuy => "Giao hàng thất bại",
+            _ => status.ToString()
+        };
+    }
+
+    string GetStatusClass(TrangThaiDonHang current, TrangThaiDonHang step)
+    {
+        if (current == TrangThaiDonHang.DaHuy && step == TrangThaiDonHang.DaHuy)
+            return "step-failed";
+
+        if (current == step)
+            return "step-active";
+
+        return (int)current > (int)step ? "step-completed" : "";
+    }
+
+    int GetProgressPercentage(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => 0,
+            TrangThaiDonHang.DangChuanBi => 33,
+            TrangThaiDonHang.DangGiaoHang => 66,
+            TrangThaiDonHang.DaGiaoThanhCong => 100,
+            TrangThaiDonHang.DaHuy => 66,
+            _ => 0
+        };
+    }
+}

@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="~/css/Template.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+    @using Microsoft.AspNetCore.Identity
+    @inject UserManager<ApplicationUser> UserManager
+    @{
+        var user = await UserManager.GetUserAsync(User);
+        string hoTen = user?.HoTen ?? "";
+
+        string ten = "";
+        if (!string.IsNullOrWhiteSpace(hoTen))
+        {
+            var parts = hoTen.Trim().Split(' ');
+            ten = parts.Last();
+        }
+    }
+
+    @functions {
+        public string IsActive(string controller)
+        {
+            var current = ViewContext.RouteData.Values["Controller"]?.ToString();
+            return string.Equals(current, controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+        }
+    }
+
+    <header id="main-header">
+        <div class="container" >
+            <nav class="navbar">
+                <a asp-action="Index" asp-controller="Home" class="logo">
+                    <div class="logo-icon">🍔</div>
+                    <h1>Food BCTECH</h1>
+                </a>
+                <ul class="nav-menu">
+                    <li><a asp-action="Index" asp-controller="Home" class="@IsActive("Home")">Trang chủ</a></li>
+                    <li><a asp-action="Index" asp-controller="Thucdon" class="@IsActive("Thucdon")">Thực đơn</a></li>
+                    <li><a asp-action="Index" asp-controller="Khuyenmai" class="@IsActive("Khuyenmai")">Khuyến mãi</a></li>
+                    <li><a asp-action="Index" asp-controller="TheoDoiDonHang" class="@IsActive("TheoDoiDonHang")">Theo dõi đơn hàng</a></li>
+                    <li><a asp-action="Index" asp-controller="LienHe" class="@IsActive("LienHe")">Liên hệ</a></li>
+                </ul>
+                <form id="logoutForm" asp-controller="Taikhoan" asp-action="Dangxuat" method="post" style="display:none;">
+                    @Html.AntiForgeryToken()
+                </form>
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <form asp-action="Dangnhap" asp-controller="Taikhoan" id="logoutForm">
+                        <div class="user-logged-in" id="userLoggedIn">
+                            <a asp-action="Index" asp-controller="GioHang" class="cart-icon" style="text-decoration: none;">
+                                🛒 <span class="cart-count">0</span>
+                            </a>
+                            <div class="user-menu">
+                                <div>Xin chào, @ten</div>
+                                <div class="dropdown-menu">
+                                    <ul>
+                                        <li><a asp-action="Index" asp-controller="Taikhoan">Tài khoản của tôi</a></li>
+                                        <li><a asp-action="Index" asp-controller="LichSuDonHang">Lịch sử đơn hàng</a></li>
+                                        <li>
+                                            <a href="javascript:void(0);" id="logoutLink" class="btn-link" style="text-decoration: none;">Đăng xuất</a>
+                                        </li>
+
+                                        <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display:none;"></form>
+
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="auth-buttons" id="authButtons">
+                        <a asp-action="Dangnhap" asp-controller="Taikhoan" class="outline" id="loginBtn">Đăng nhập</a>
+                        <a asp-action="Dangky" asp-controller="Taikhoan" id="registerBtn">Đăng ký</a>
+                    </div>
+                }
+            </nav>
+        </div>
+    </header>
+        @RenderBody()
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <h3>Food BCTECH</h3>
+                    <p>Food BCTECH cam kết mang đến bữa ăn nhanh chất lượng, đậm vị, giá bình dân, phục vụ tận tâm với tinh thần ẩm thực học sinh, sinh viên Việt Nam.</p>
+                    <div class="social-links">
+                        <a href="https://web.facebook.com/cdktcnbrvt/?locale=vi_VN&_rdc=1&_rdr#" style="width: 100px;border-radius: 15px;">Facebook</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h3>Liên kết nhanh</h3>
+                    <a asp-action="Index" asp-controller="Home">Trang chủ</a>
+                    <a asp-action="Index" asp-controller="Thucdon">Thực đơn</a>
+                    <a asp-action="Index" asp-controller="Khuyenmai">Khuyến mãi</a>
+                    <a asp-action="Index" asp-controller="Theodoidonhang">Theo dõi đơn hàng</a>
+                    <a asp-action="Index" asp-controller="LienHe">Liên hệ</a>
+                </div>
+                <div class="footer-col" id="contact">
+                    <h3 id="lienhe">Liên hệ</h3>
+                    <p>Đường 3/2 - Phường 11 - TP. Vũng Tàu</p>
+                    <p>Email: info@bctech.edu.vn</p>
+                    <p>Hotline: (0254) 3.583.545</p>
+                </div>
+                <div class="footer-col newsletter">
+                    <h3>Đăng ký nhận tin</h3>
+                    <p>Đăng ký để nhận thông tin khuyến mãi mới nhất</p>
+                    <input type="email" placeholder="Email của bạn">
+                    <button class="btn">Đăng ký</button>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/Template.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Cấu hình toastr
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Hiển thị toastr từ TempData nếu có
+            var toastMessage = '@Html.Raw(TempData["ToastMessage"]?.ToString() ?? "")';
+            var toastType = '@Html.Raw(TempData["ToastType"]?.ToString()?.ToLower() ?? "")';
+            if (toastMessage) {
+                switch (toastType) {
+                    case 'success':
+                        toastr.success(toastMessage);
+                        break;
+                    case 'error':
+                        toastr.error(toastMessage);
+                        break;
+                    case 'warning':
+                        toastr.warning(toastMessage);
+                        break;
+                    default:
+                        toastr.info(toastMessage);
+                }
+            }
+
+            // Xác nhận logout với SweetAlert2
+            $('#logoutLink').click(function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Đăng xuất?',
+                    text: "Bạn có chắc chắn muốn đăng xuất?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Đăng xuất',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#logoutForm').submit();
+                    }
+                });
+            });
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,416 @@
+﻿@model IEnumerable<QlW_BandoanOnline.Models.KhuyenMai>
+@{
+    ViewData["Title"] = "Khuyến mãi";
+}
+<link href="~/css/Khuyenmai.css" rel="stylesheet" />
+    <div class="container">
+        <div class="promo-heading text-center">
+            <h1 class="animate__animated animate__fadeIn">
+                <i class="fas fa-utensils food-icon"></i>
+                Khuyến Mãi Hiện Có
+                <i class="fas fa-pizza-slice food-icon"></i>
+            </h1>
+            <p class="animate__animated animate__fadeIn animate__delay-1s">Khám phá các ưu đãi hấp dẫn dành cho bạn. Sử dụng mã khuyến mãi để tiết kiệm khi đặt món ăn yêu thích!</p>
+        </div>
+
+        <div class="promo-filter animate__animated animate__fadeIn animate__delay-1s">
+            <button class="filter-btn active" data-filter="all">Tất cả</button>
+            <button class="filter-btn" data-filter="percent">Giảm theo %</button>
+            <button class="filter-btn" data-filter="amount">Giảm trực tiếp</button>
+            <button class="filter-btn" data-filter="expiring">Sắp hết hạn</button>
+        </div>
+
+        <div class="row" id="promoContainer">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4 promo-item animate__animated animate__fadeInUp"
+                     data-type="@(item.LaPhanTram ? "percent" : "amount")"
+                     data-expiring="@(IsExpiringSoon(item.NgayKetThuc))">
+                    <div class="promo-card">
+                        @if (IsExpiringSoon(item.NgayKetThuc))
+                        {
+                            <span class="expiring-soon">Sắp hết hạn!</span>
+                        }
+                        <div class="promo-card-header">
+                            <h5 class="promo-card-title">
+                                <i class="fas @(item.LaPhanTram ? "fa-percent" : "fa-tags")"></i>
+                                @item.TenKhuyenMai
+                            </h5>
+                        </div>
+                        <div class="promo-card-body">
+                            <p class="promo-desc">@item.MoTa</p>
+                            <div class="discount-badge pulse">
+                            <i class="fas fa-gift"></i> Giảm
+                            @(item.LaPhanTram
+                                ? (item.GiaTriGiam % 1 == 0
+                                ? $"{Convert.ToInt32(item.GiaTriGiam)}%"
+                                : $"{item.GiaTriGiam}%")
+                                : FormatCurrency(item.GiaTriGiam))
+                            </div>
+                            <div class="promo-code">
+                                <span class="promo-code-text">@item.MaKhuyenMaiCode</span>
+                                <button class="copy-btn" data-code="@item.MaKhuyenMaiCode">
+                                    <i class="fas fa-copy"></i> Sao chép
+                                </button>
+                            </div>
+                            <div class="promo-details">
+                                <div class="promo-detail-item">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>HSD: @item.NgayKetThuc.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                @if (item.SanPham != null)
+                                {
+                                    <div class="promo-detail-item">
+                                        <i class="fas fa-utensils"></i>
+                                        <span>Áp dụng cho: @item.SanPham.TenSanPham</span>
+                                    </div>
+                                }
+                                else if (item.DanhMuc != null)
+                                {
+                                    <div class="promo-detail-item">
+                                        <i class="fas fa-list"></i>
+                                        <span>Áp dụng cho danh mục: @item.DanhMuc.TenDanhMuc</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="promo-card-footer">
+                            <a href="/Khuyenmai/ChiTiet/@item.MaKhuyenMai" class="view-details-btn">
+                                <i class="fas fa-info-circle"></i> Chi tiết
+                            </a>
+                            <span class="timer"><i class="far fa-clock"></i> @GetTimeRemaining(item.NgayKetThuc)</span>
+                        </div>
+                    </div>
+                </div>
+                <br />
+            }
+        </div>
+        
+        @if (!Model.Any())
+        {
+            <div id="emptyState" class="empty-state">
+                <i class="fas fa-ticket-alt"></i>
+                <h3>Không có khuyến mãi nào</h3>
+                <p>Hiện tại không có chương trình khuyến mãi nào đang diễn ra. Vui lòng quay lại sau để xem các ưu đãi mới nhất từ chúng tôi.</p>
+            </div>
+        }
+    </div>
+    <br />
+    @section Scripts {
+        <script>
+            // Thêm event listener cho nút sao chép
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const code = this.getAttribute('data-code');
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i> Đã sao chép';
+                        this.style.backgroundColor = '#2ecc71';
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.style.backgroundColor = '';
+                        }, 2000);
+                    });
+                });
+            });
+
+            // Lọc khuyến mãi
+            function filterPromotions(filter) {
+                const buttons = document.querySelectorAll('.filter-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                
+                const filterButton = document.querySelector(`[data-filter="${filter}"]`);
+                if (filterButton) {
+                    filterButton.classList.add('active');
+                }
+                
+                const allPromos = document.querySelectorAll('.promo-item');
+                
+                allPromos.forEach(promo => {
+                    const typeMatch = filter === 'all' || promo.getAttribute('data-type') === filter;
+                    const expiringMatch = filter !== 'expiring' || promo.getAttribute('data-expiring') === 'True';
+                    
+                    if ((filter === 'all') || 
+                        (filter === 'percent' && typeMatch) || 
+                        (filter === 'amount' && typeMatch) ||
+                        (filter === 'expiring' && expiringMatch)) {
+                        promo.style.display = 'block';
+                    } else {
+                        promo.style.display = 'none';
+                    }
+                });
+                
+                // Kiểm tra nếu không có khuyến mãi nào hiển thị
+                const visiblePromos = document.querySelectorAll('.promo-item[style="display: block;"], .promo-item:not([style])');
+                const emptyState = document.getElementById('emptyState');
+                
+                if (visiblePromos.length === 0 && emptyState) {
+                    emptyState.style.display = 'block';
+                } else if (emptyState) {
+                    emptyState.style.display = 'none';
+                }
+            }
+
+            // Khởi tạo trang
+            document.addEventListener('DOMContentLoaded', function() {
+                // Thêm event listener cho các nút lọc
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const filter = this.getAttribute('data-filter');
+                        filterPromotions(filter);
+                    });
+                });
+            });
+        </script>
+    }
+
+    @functions {
+        // Định dạng số tiền
+        public string FormatCurrency(decimal amount)
+        {
+            return amount.ToString("N0") + "đ";
+        }
+
+        // Kiểm tra sắp hết hạn (còn 3 ngày hoặc ít hơn)
+        public bool IsExpiringSoon(DateTime endDate)
+        {
+            var today = DateTime.Today;
+            var diffDays = (endDate - today).TotalDays;
+            return diffDays <= 3 && diffDays >= 0;
+        }
+
+        // Tính thời gian còn lại
+        public string GetTimeRemaining(DateTime endDate)
+        {
+            var now = DateTime.Now;
+            var total = endDate - now;
+            var days = (int)total.TotalDays;
+            var hours = total.Hours;
+            var minutes = total.Minutes;
+            
+            if (days > 0)
+            {
+                return $"Còn {days} ngày {hours} giờ";
+            }
+            else if (hours > 0)
+            {
+                return $"Còn {hours} giờ {minutes} phút";
+            }
+            else if (minutes > 0)
+            {
+                return $"Còn {minutes} phút";
+            }
+            else
+            {
+                return "Sắp hết hạn";
+            }
+        }
+    }
+
+    <script>
+        // Định dạng số tiền
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+        }
+
+        // Định dạng ngày tháng
+        function formatDate(date) {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Kiểm tra sắp hết hạn (còn 3 ngày hoặc ít hơn)
+        function isExpiringSoon(date) {
+            const today = new Date();
+            const diffTime = date - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays <= 3 && diffDays >= 0;
+        }
+
+        // Tính thời gian còn lại
+        function getTimeRemaining(endDate) {
+            const total = endDate - new Date();
+            const days = Math.floor(total / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((total % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((total % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (days > 0) {
+                return `Còn ${days} ngày ${hours} giờ`;
+            } else if (hours > 0) {
+                return `Còn ${hours} giờ ${minutes} phút`;
+            } else if (minutes > 0) {
+                return `Còn ${minutes} phút`;
+            } else {
+                return "Sắp hết hạn";
+            }
+        }
+
+        // Render khuyến mãi
+        function renderPromotions(promos) {
+            const container = document.getElementById('promoContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (promos.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            container.innerHTML = promos.map((promo, index) => {
+                // Xác định icon cho khuyến mãi
+                let promoIcon;
+                if (promo.laPhanTram) {
+                    promoIcon = 'fa-percent';
+                } else {
+                    promoIcon = 'fa-tags';
+                }
+
+                // Xác định nếu sắp hết hạn
+                const expiringBadge = isExpiringSoon(promo.ngayKetThuc) ?
+                    `<span class="expiring-soon">Sắp hết hạn!</span>` : '';
+
+                // Xác định đối tượng áp dụng
+                let appliesTo = '';
+                if (promo.sanPham) {
+                    appliesTo = `<div class="promo-detail-item">
+                        <i class="fas fa-utensils"></i>
+                        <span>Áp dụng cho: ${promo.sanPham.tenSanPham}</span>
+                    </div>`;
+                } else if (promo.danhMuc) {
+                    appliesTo = `<div class="promo-detail-item">
+                        <i class="fas fa-list"></i>
+                        <span>Áp dụng cho danh mục: ${promo.danhMuc.tenDanhMuc}</span>
+                    </div>`;
+                }
+
+                // Định dạng giá trị giảm
+                const discountValue = promo.laPhanTram ?
+                    `${promo.giaTriGiam}%` :
+                    formatCurrency(promo.giaTriGiam);
+
+                // Tính thời gian còn lại
+                const timeRemaining = getTimeRemaining(promo.ngayKetThuc);
+
+                // Class cho animation
+                const animationDelay = `animate__delay-${(index % 3) + 1}s`;
+
+                return `
+                <div class="col-md-4 mb-4 promo-item animate__animated animate__fadeInUp ${animationDelay}"
+                     data-type="${promo.laPhanTram ? 'percent' : 'amount'}"
+                     data-expiring="${isExpiringSoon(promo.ngayKetThuc)}">
+                    <div class="promo-card">
+                        ${expiringBadge}
+                        <div class="promo-card-header">
+                            <h5 class="promo-card-title">
+                                <i class="fas ${promoIcon}"></i>
+                                ${promo.tenKhuyenMai}
+                            </h5>
+                        </div>
+                        <div class="promo-card-body">
+                            <p class="promo-desc">${promo.moTa}</p>
+                            <div class="discount-badge pulse">
+                                <i class="fas fa-gift"></i> Giảm ${discountValue}
+                            </div>
+                            <div class="promo-code">
+                                <span class="promo-code-text">${promo.maKhuyenMaiCode}</span>
+                                <button class="copy-btn" data-code="${promo.maKhuyenMaiCode}">
+                                    <i class="fas fa-copy"></i> Sao chép
+                                </button>
+                            </div>
+                            <div class="promo-details">
+                                <div class="promo-detail-item">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>HSD: ${formatDate(promo.ngayKetThuc)}</span>
+                                </div>
+                                ${appliesTo}
+                            </div>
+                        </div>
+                        <div class="promo-card-footer">
+                            <a href="/KhuyenMai/ChiTiet/${promo.maKhuyenMai}" class="view-details-btn">
+                                <i class="fas fa-info-circle"></i> Chi tiết
+                            </a>
+                            <span class="timer"><i class="far fa-clock"></i> ${timeRemaining}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            // Thêm event listener cho nút sao chép
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const code = this.getAttribute('data-code');
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check"></i> Đã sao chép';
+                        this.style.backgroundColor = '#2ecc71';
+
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.style.backgroundColor = '';
+                        }, 2000);
+                    });
+                });
+            });
+        }
+
+        // Lọc khuyến mãi
+        function filterPromotions(filter) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            const filterButton = document.querySelector(`[data-filter="${filter}"]`);
+            if (filterButton) {
+                filterButton.classList.add('active');
+            }
+
+            if (filter === 'all') {
+                renderPromotions(promotions);
+                return;
+            }
+
+            let filteredPromos;
+
+            if (filter === 'percent') {
+                filteredPromos = promotions.filter(promo => promo.laPhanTram);
+            } else if (filter === 'amount') {
+                filteredPromos = promotions.filter(promo => !promo.laPhanTram);
+            } else if (filter === 'expiring') {
+                filteredPromos = promotions.filter(promo => isExpiringSoon(promo.ngayKetThuc));
+            } else {
+                filteredPromos = promotions;
+            }
+
+            renderPromotions(filteredPromos);
+        }
+
+        // Khởi tạo trang
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render khuyến mãi ban đầu
+            renderPromotions(promotions);
+
+            // Thêm event listener cho các nút lọc
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    filterPromotions(filter);
+                });
+            });
+
+            // Cập nhật bộ đếm thời gian mỗi phút
+            setInterval(() => {
+                document.querySelectorAll('.timer').forEach(timer => {
+                    const promoItem = timer.closest('.promo-item');
+                    const index = Array.from(document.querySelectorAll('.promo-item')).indexOf(promoItem);
+                    if (index !== -1 && index < promotions.length) {
+                        timer.innerHTML = `<i class="far fa-clock"></i> ${getTimeRemaining(promotions[index].ngayKetThuc)}`;
+                    }
+                });
+            }, 60000);
+        });
+    </script>

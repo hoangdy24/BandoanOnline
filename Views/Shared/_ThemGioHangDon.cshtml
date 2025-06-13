@@ -1,0 +1,79 @@
+﻿@using Newtonsoft.Json
+@using QlW_BandoanOnline.Models.ViewModels
+@model ThemGioHangViewModel
+
+<form class="add-to-cart-form-simple" asp-controller="GioHang" asp-action="ThemDon" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaSanPham" />
+    <input type="hidden" asp-for="TuyChonJson" class="tuy-chon-json"
+           value="@JsonConvert.SerializeObject(new[] { new { TenTuyChon = "", LuaChon = "", GiaThem = 0 } })" />
+    <input type="hidden" asp-for="SoLuong" value="1" />
+
+    <button type="button" class="btn btn-add-to-cart-simple" data-product-id="@Model.MaSanPham">
+        <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
+    </button>
+</form>
+
+<script>
+    if (!window.cartSimpleEventRegistered) {
+        window.cartSimpleEventRegistered = true;
+
+        function showToast(message, isSuccess) {
+            toastr.options = {
+                closeButton: true,
+                progressBar: true,
+                positionClass: "toast-top-right",
+                timeOut: 3000
+            };
+            isSuccess ? toastr.success(message) : toastr.error(message);
+        }
+
+        document.addEventListener('click', async function(e) {
+            const btn = e.target.closest('.btn-add-to-cart-simple');
+            if (btn) {
+                e.preventDefault();
+                const form = btn.closest('.add-to-cart-form-simple');
+                const productId = btn.dataset.productId;
+
+                // Hiển thị loading
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                btn.disabled = true;
+
+                try {
+                    // Kiểm tra giỏ hàng hiện tại trước
+                    const checkResponse = await fetch('/GioHang/GetTongSoLuong');
+                    const checkData = await checkResponse.json();
+
+                    // Gửi request thêm vào giỏ hàng
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': form.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: new URLSearchParams(new FormData(form))
+                    });
+
+                    if (!response.ok) throw new Error('Network error');
+
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast(data.message || 'Đã thêm vào giỏ hàng', true);
+                        document.querySelectorAll('.cart-count').forEach(el => {
+                            el.textContent = data.cartCount;
+                        });
+                    } else {
+                        throw new Error(data.message || 'Lỗi khi thêm vào giỏ hàng');
+                    }
+                } catch (error) {
+                    showToast(error.message || 'Lỗi khi thêm vào giỏ hàng', false);
+                    console.error('Error:', error);
+                } finally {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
+        });
+    }
+</script>

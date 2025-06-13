@@ -1,0 +1,41 @@
+@model QlW_BandoanOnline.Models.DonHang
+
+@{
+    ViewData["Title"] = "Kết quả thanh toán";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (ViewBag.Success != null)
+{
+    if ((bool)ViewBag.Success)
+    {
+        <div class="alert alert-success">
+            <strong>Thành công!</strong> @ViewBag.Message
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            <strong>Lỗi!</strong> @ViewBag.Message
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-info">
+        Đang xử lý kết quả thanh toán...
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header">
+        Thông tin đơn hàng #@Model.MaDonHangPublic
+    </div>
+    <div class="card-body">
+        <p><strong>Tổng tiền:</strong> @Model.ChiTietDonHang.Sum(ct => ct.ThanhTien).ToString("N0") VNĐ</p>
+        <p><strong>Trạng thái:</strong> @Model.TrangThai</p>
+        <p><strong>Đã thanh toán:</strong> @(Model.DaThanhToan ? "Có" : "Chưa")</p>
+        <p><strong>Mã giao dịch:</strong> @Model.VnPayTransaction.BankCode</p>
+    </div>
+</div>

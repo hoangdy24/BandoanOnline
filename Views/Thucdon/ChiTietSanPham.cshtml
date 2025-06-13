@@ -1,0 +1,69 @@
+﻿@using Newtonsoft.Json
+@using QlW_BandoanOnline.Models.ViewModels
+<link href="~/css/Chitietsanpham.css" rel="stylesheet" />
+        @model ChiTietSanPhamViewModel
+        @{
+            var sanPham = Model.SanPham;
+            bool chondau = true;
+            ViewData["Title"] = "Món " + sanPham.TenSanPham;
+        }
+
+        <div class="container">
+            <div class="product-container">
+                <div class="product-image">
+                <img src="~/images/Menu/@sanPham.HinhAnh" alt="Burger Deluxe" id="productImage">
+                <input type="hidden" name="MaSanPham" value="@sanPham.MaSanPham" />
+                </div>
+
+                <div class="product-details">
+                    <h1 class="product-title">@sanPham.TenSanPham</h1>
+                    <p class="product-description">
+                        @sanPham.MoTa
+                    </p>
+                <div class="product-price" id="basePrice" data-base-price="@sanPham.GiaBan">@sanPham.GiaBan.ToString("N0") ₫</div>
+                <div id="tuyChonContainer">
+                    @foreach (var tuyChon in Model.TuyChons)
+                    {
+                        var chiTiets = Model.ChiTietTheoTuyChon[tuyChon.MaTuyChon];
+                        if (tuyChon.BatBuoc)
+                        {
+                            <h3 class="section-title">@tuyChon.TenTuyChon</h3>
+                            <div class="size-options">
+                            @foreach (var ct in chiTiets)
+                            {
+                                    <input type="hidden" id="selected-size" name="selectedSize" />
+                                    <div class="size-option @(chondau ? "selected" : "")" data-value="@ct.MaChiTietTuyChon" data-price="@ct.GiaThem">
+                                        @ct.TenChiTiet
+                                    </div>
+                                    chondau = false;
+                            }
+                            </div>
+                        }
+                        else
+                        {
+                            <h3 class="section-title">@tuyChon.TenTuyChon</h3>
+                            @foreach (var ct in chiTiets)
+                            {
+                                <div class="topping-option">
+                                    <input type="checkbox"
+                                           class="topping-checkbox"
+                                           id="topping_@ct.MaChiTietTuyChon"
+                                           data-price="@ct.GiaThem"
+                                           data-name="@ct.TenChiTiet"
+                                           value="@ct.MaChiTietTuyChon" />
+                                    <label for="topping_@ct.MaChiTietTuyChon">@ct.TenChiTiet</label>
+                                    <span class="topping-price">@ct.GiaThem.ToString("N0") ₫</span>
+                                </div>
+                            }
+                        }
+                    }
+                    @await Html.PartialAsync("_ThemGioHang", new ThemGioHangViewModel
+                    {
+                       MaSanPham = Model.SanPham.MaSanPham,
+                       TuyChonJson = JsonConvert.SerializeObject(ViewBag.TuyChons)
+                    })
+                    <br />
+                </div>
+            </div>
+        </div>
+    </div>

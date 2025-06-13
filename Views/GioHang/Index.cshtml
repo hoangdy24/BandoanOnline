@@ -1,0 +1,410 @@
+﻿@model QlW_BandoanOnline.Models.GioHang
+
+@{
+    ViewData["Title"] = "Giỏ Hàng";
+}
+
+<link href="~/css/Giohang.css" rel="stylesheet" />
+
+<div class="container">
+    <div class="cart-header">
+        <h2 class="cart-title">Giỏ Hàng Của Bạn</h2>
+        @if (Model.GioHangItem != null && Model.GioHangItem.Any())
+        {
+            <form method="post" asp-action="XoaTatCa" id="clearCartForm">
+                <button type="submit" class="clear-cart-btn">Xóa Tất Cả</button>
+            </form>
+        }
+    </div>
+
+    @if (Model.GioHangItem == null || !Model.GioHangItem.Any())
+    {
+        <div class="empty-cart">
+            <img src="~/images/Gui/GioHang/empty-cart.png" alt="Giỏ hàng trống" class="empty-cart-img">
+            <h3>Giỏ hàng của bạn đang trống!</h3>
+            <p>Thêm một số món ngon để tiếp tục mua sắm.</p>
+            <a asp-action="Index" asp-controller="Thucdon" class="continue-shopping">Tiếp Tục Mua Sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-content">
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Ghi chú</th>
+                        <th>Thành tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.GioHangItem)
+                    {
+                        var tuyChonList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(item.TuyChon ?? "[]");
+                        var giaThem = tuyChonList?.Sum(o =>
+                        {
+                            try
+                            {
+                                return (decimal)(o?.GiaThem ?? 0);
+                            }
+                            catch
+                            {
+                                return 0m;
+                            }
+                        }) ?? 0m;
+                        var tongGia = (item.GiaBan + giaThem) * item.SoLuong;
+
+                        <tr data-productid="@item.MaSanPham">
+                            <td class="product-info">
+                                <div class="product-img-container">
+                                    <img src="~/images/Menu/@item.SanPham.HinhAnh" alt="@item.TenSanPham" class="product-img" onerror="this.src='/images/default-food.png'">
+                                </div>
+                                <div class="product-details">
+                                    <div class="product-name">@item.TenSanPham</div>
+                                    @if (tuyChonList != null && tuyChonList.Count > 0)
+                                    {
+                                        <div class="product-options">
+                                            @foreach (var opt in tuyChonList)
+                                            {
+                                                <div class="option-item">
+                                                    <span class="option-name">@(opt?.TenTuyChon ?? "")</span>
+                                                    <span class="option-price">(+@Convert.ToDecimal(opt?.GiaThem ?? 0).ToString("N0") ₫)</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                            <td class="product-price">
+                                @if (giaThem > 0)
+                                {
+                                    <span class="base-price">
+                                        @((item.GiaBan + giaThem).ToString("N0")) ₫
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="base-price">@item.GiaBan.ToString("N0") ₫</span>
+                                }
+                            </td>
+                            <td class="quantity-cell">
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn decrease" data-action="decrease">-</button>
+                                    <input type="number" class="quantity-input" value="@item.SoLuong" min="1" data-productid="@item.MaSanPham" />
+                                    <button type="button" class="quantity-btn increase" data-action="increase">+</button>
+                                </div>
+                            </td>
+                            <td class="product-note">
+                                @if (!string.IsNullOrEmpty(item.GhiChu))
+                                {
+                                    <div class="note-text" title="@item.GhiChu">
+                                        <i class="fas fa-comment-alt"></i> @(item.GhiChu.Length > 20 ? item.GhiChu.Substring(0, 20) + "..." : item.GhiChu)
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="note-empty">
+                                        <i class="far fa-comment-alt"></i> Không có ghi chú
+                                    </div>
+                                }
+                            </td>
+                            <td class="subtotal">@tongGia.ToString("N0") ₫</td>
+                            <td class="actions">
+                                <button type="button" class="remove-btn" data-productid="@item.MaSanPham" data-productname="@item.TenSanPham">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="cart-summary">
+                @{
+                    var tongTien = Model.GioHangItem.Sum(i =>
+                    {
+                        var opt = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(i.TuyChon ?? "[]");
+                        var extra = opt?.Sum(o =>
+                    {
+                        try
+                        {
+                            return (decimal)(o?.GiaThem ?? 0);
+                        }
+                        catch
+                        {
+                            return 0m;
+                        }
+                    }) ?? 0m;
+                        return (i.GiaBan + extra) * i.SoLuong;
+                    });
+                    var phiVanChuyen = 20000m;
+                    var tongCong = tongTien + phiVanChuyen;
+                }
+
+                <div class="summary-section">
+                    <div class="summary-row">
+                        <span class="summary-label">Tạm tính:</span>
+                        <span class="summary-value">@tongTien.ToString("N0") ₫</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Phí vận chuyển:</span>
+                        <span class="summary-value">@phiVanChuyen.ToString("N0") ₫</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span class="summary-label">Tổng cộng:</span>
+                        <span class="summary-value">@tongCong.ToString("N0") ₫</span>
+                    </div>
+                    <br />
+                    <a asp-action="Index" asp-controller="XacNhanDonHang" class="checkout-btn">
+                        Tiến hành đặt hàng <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+             </div>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script>
+        // Kết nối SignalR Hub
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/gioHangHub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        connection.on("CapNhatSoLuongGioHang", (soLuong) => {
+            $(".cart-count").text(soLuong);
+        });
+
+        async function startConnection() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(startConnection, 5000);
+            }
+        }
+
+        connection.onclose(async () => {
+            await startConnection();
+        });
+
+        startConnection();
+
+        // Toastr configuration
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: 3000,
+            extendedTimeOut: 1000,
+            preventDuplicates: true
+        };
+
+        // Hiển thị toast từ TempData nếu có
+        @if (TempData["ToastMessage"] != null)
+        {
+            <text>
+                $(document).ready(function() {
+                    toastr.success('@Html.Raw(TempData["ToastMessage"])');
+                });
+            </text>
+        }
+
+        // Xử lý tăng/giảm số lượng
+        $(document).on("click", ".quantity-btn", function() {
+            const btn = $(this);
+            const action = btn.data("action");
+            const productId = btn.closest("tr").data("productid");
+            const quantityInput = btn.siblings(".quantity-input");
+            let quantity = parseInt(quantityInput.val());
+
+            if (action === "increase") {
+                quantity++;
+                quantityInput.val(quantity);
+            } else if (action === "decrease" && quantity > 1) {
+                quantity--;
+                quantityInput.val(quantity);
+            }
+
+            updateCartItem(productId, action, quantity);
+        });
+
+        // Xử lý thay đổi số lượng trực tiếp
+        $(document).on("change", ".quantity-input", function() {
+            const input = $(this);
+            const productId = input.data("productid");
+            const quantity = parseInt(input.val());
+
+            if (isNaN(quantity) || quantity < 1) {
+                input.val(1);
+                updateCartItem(productId, "set", 1);
+            } else {
+                updateCartItem(productId, "set", quantity);
+            }
+        });
+
+        // Xử lý xóa sản phẩm
+        $(document).on("click", ".remove-btn", function () {
+            const productId = $(this).data("productid");
+            const productName = $(this).data("productname");
+
+            Swal.fire({
+                title: 'Xác nhận xóa',
+                html: `Bạn có chắc muốn xóa <strong>"${productName}"</strong> khỏi giỏ hàng?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteCartItem(productId);
+                }
+            });
+        });
+
+
+        // Xử lý xóa tất cả
+             $("#clearCartForm").on("submit", function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Xác nhận',
+                text: "Bạn có chắc muốn xóa tất cả sản phẩm khỏi giỏ hàng?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Xóa tất cả',
+                cancelButtonText: 'Hủy bỏ'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const originalHtml = $(".clear-cart-btn").html();
+                    $(".clear-cart-btn").html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+                    $(".clear-cart-btn").prop("disabled", true);
+
+                    $.ajax({
+                        url: $("#clearCartForm").attr("action"),
+                        method: "POST",
+                        data: $("#clearCartForm").serialize(),
+                        success: function (data) {
+                            if (data.success) {
+                                toastr.success(data.message);
+
+                                $(".cart-content").html(`
+                                    <div class="empty-cart">
+                                        <img src="~/images/Gui/GioHang/empty-cart.png" alt="Giỏ hàng trống" class="empty-cart-img">
+                                        <h3>Giỏ hàng của bạn đang trống!</h3>
+                                        <p>Thêm một số món ngon để tiếp tục mua sắm.</p>
+                                        <a href="/Thucdon" class="continue-shopping">Tiếp Tục Mua Sắm</a>
+                                    </div>
+                                `);
+
+                                $(".cart-count").text("0");
+                                $("#clearCartForm").remove();
+                            } else {
+                                toastr.error(data.message);
+                            }
+                        },
+                        error: function () {
+                            toastr.error("Có lỗi xảy ra khi xóa giỏ hàng");
+                        },
+                        complete: function () {
+                            $(".clear-cart-btn").html(originalHtml).prop("disabled", false);
+                        }
+                    });
+                }
+            });
+        });
+
+        // Hàm cập nhật số lượng sản phẩm
+        function updateCartItem(productId, actionType, quantity) {
+            $.post("/GioHang/CapNhat", {
+                MaSanPham: productId,
+                actionType: actionType,
+                soLuong: quantity
+            }, function(data) {
+                if (data.success) {
+                    toastr.success(data.message);
+
+                    if (data.isRemoved) {
+                        $(`tr[data-productid="${productId}"]`).remove();
+                        if ($(".cart-table tbody tr").length === 0) {
+                            location.reload();
+                        }
+                    } else {
+                        const row = $(`tr[data-productid="${productId}"]`);
+                        row.find(".quantity-input").val(data.newQuantity);
+                        row.find(".subtotal").text(data.newSubtotal.toLocaleString() + " ₫");
+                    }
+
+                    updateCartSummary();
+                    $(".cart-count").text(data.cartCount);
+                } else {
+                    toastr.error(data.message);
+                    location.reload(); // Reload để đồng bộ dữ liệu
+                }
+            }).fail(function() {
+                toastr.error("Có lỗi xảy ra khi cập nhật giỏ hàng");
+                location.reload();
+            });
+        }
+
+        // Hàm xóa sản phẩm
+        // Trong hàm deleteCartItem (Index.cshtml)
+        function deleteCartItem(productId) {
+            const token = $('input[name="__RequestVerificationToken"]').val(); // Lấy token từ form
+
+            $.post("/GioHang/Xoa", {
+                id: productId,
+                __RequestVerificationToken: token // Thêm token vào request
+            }, function(data) {
+                if (data.success) {
+                    toastr.success(data.message);
+                    $(`tr[data-productid="${productId}"]`).remove();
+                    if ($(".cart-table tbody tr").length === 0) {
+                        location.reload();
+                    } else {
+                        updateCartSummary();
+                        $(".cart-count").text(data.cartCount);
+                    }
+                } else {
+                    toastr.error(data.message);
+                }
+            }).fail(function() {
+                toastr.error("Có lỗi xảy ra khi xóa sản phẩm");
+            });
+        }
+
+        // Hàm cập nhật tổng tiền
+        function updateCartSummary() {
+            let newTotal = 0;
+            $(".cart-table tbody tr").each(function() {
+                const subtotalText = $(this).find(".subtotal").text();
+                const subtotalValue = parseFloat(subtotalText.replace(/[^\d]/g, ''));
+                newTotal += isNaN(subtotalValue) ? 0 : subtotalValue;
+            });
+
+            const phiVanChuyen = 20000;
+            const tongCong = newTotal + phiVanChuyen;
+
+            $(".summary-row:eq(0) .summary-value").text(newTotal.toLocaleString() + " ₫");
+            $(".summary-row:eq(2) .summary-value").text(tongCong.toLocaleString() + " ₫");
+        }
+    </script>
+}

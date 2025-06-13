@@ -1,0 +1,292 @@
+﻿<link href="~/css/LienHe.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Liên hệ";
+}
+    <section class="contact-hero">
+        <div class="container">
+            <h1>Liên hệ với chúng tôi</h1>
+            <p>Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn!</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-grid">
+                <!-- Contact Form -->
+                <div class="contact-form-container">
+                    <form class="contact-form" id="contactForm">
+                    @Html.AntiForgeryToken()
+                        <h2><i class="fas fa-envelope"></i> Gửi tin nhắn</h2>
+                        <div id="messageContainer"></div>
+
+                        <div class="form-group">
+                            <label for="fullName">Họ và tên *</label>
+                            <input type="text" id="fullName" name="fullName" required placeholder="Nhập họ và tên của bạn">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" required placeholder="Nhập địa chỉ email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Số điện thoại</label>
+                            <input type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Chủ đề *</label>
+                            <select id="subject" name="subject" required>
+                                <option value="">Chọn chủ đề</option>
+                                <option value="Khiếu nại">Khiếu nại</option>
+                                <option value="Góp ý">Góp ý</option>
+                                <option value="Hợp tác">Hợp tác</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Nội dung *</label>
+                            <textarea id="message" name="message" required placeholder="Nhập nội dung tin nhắn của bạn..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-paper-plane"></i>
+                            Gửi tin nhắn
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="contact-info">
+                    <div class="contact-card">
+                        <div class="contact-card-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3>Địa chỉ</h3>
+                        <p>Đường 3/2 - Phường 11</p>
+                        <p>TP. Vũng Tàu, Việt Nam</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-card-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h3>Điện thoại</h3>
+                        <p><a href="tel:19001234567">(0254) 3.583.545</a></p>
+                        <p>Từ 8:00 - 22:00 hàng ngày</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-card-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Email</h3>
+                        <p><a href="mailto:burgerbui008@gmail.com">info@bctech.edu.vn</a></p>
+                        <p>Phản hồi trong 24h</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-card-icon">
+                            <i class="fab fa-facebook"></i>
+                        </div>
+                        <h3>Mạng xã hội</h3>
+                    <p><a href="https://web.facebook.com/cdktcnbrvt/?locale=vi_VN&_rdc=1&_rdr#" target="_blank">Facebook</a></p>
+                        <p>Theo dõi để nhận ưu đãi</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-container">
+                <div class="map-header">
+                    <h3><i class="fas fa-map"></i> Vị trí của chúng tôi</h3>
+                </div>
+            <iframe width="100%"
+                    height="450"
+                    frameborder="0"
+                    style="border:0"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3917.126970488595!2d107.1393373!3d10.3931254!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317571a2300fc58d%3A0x377991f38f616831!2zVHLGsOG7nW5nIENhbyDEkMOgbmcgS2nhu4fhuqV0IEPDtG5nIE5naGnhu4cgQsOhIFJp4buHYSAtIFbFqW5nIFThuqVuIENhw6Agc-G7nyAy!5e0!3m2!1svi!2s!4v1717653261263!5m2!1svi!2s">
+            </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="contact-cta">
+        <div class="container">
+            <h2>Sẵn sàng đặt hàng?</h2>
+            <p>Khám phá thực đơn phong phú của chúng tôi và đặt hàng ngay hôm nay!</p>
+            <div class="cta-buttons">
+                <a href="/Thucdon" class="cta-btn">
+                    <i class="fas fa-utensils"></i> Xem thực đơn
+                </a>
+                <a href="/GioHang" class="cta-btn">
+                    <i class="fas fa-shopping-cart"></i> Đặt hàng ngay
+                </a>
+            </div>
+        </div>
+    </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactForm = document.getElementById('contactForm');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Form validation và animation
+        const inputs = contactForm.querySelectorAll('input, select, textarea');
+
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+
+            input.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    this.style.borderColor = 'var(--success-color)';
+                } else {
+                    this.style.borderColor = '#e0e0e0';
+                }
+            });
+        });
+
+        // Form submission
+        contactForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('.btn-submit');
+            const originalText = submitBtn.innerHTML;
+
+            // Loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+            submitBtn.disabled = true;
+            contactForm.classList.add('loading');
+
+            try {
+                // Lấy dữ liệu từ form
+                    const formData = {
+                    FullName: document.getElementById('fullName').value,
+                    Email: document.getElementById('email').value,
+                    Phone: document.getElementById('phone').value,
+                    Subject: document.getElementById('subject').value,
+                    Message: document.getElementById('message').value
+                };
+
+                const response = await fetch('/LienHe/SubmitContactForm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Reset form nếu gửi thành công
+                    contactForm.reset();
+                    inputs.forEach(input => {
+                        input.style.borderColor = '#e0e0e0';
+                    });
+                }
+
+                // Hiển thị thông báo
+                showMessage(result.message, result.success ? 'success' : 'error');
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại sau.', 'error');
+            } finally {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                contactForm.classList.remove('loading');
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${text}`;
+
+            messageContainer.innerHTML = '';
+            messageContainer.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.style.animation = 'fadeOut 0.5s ease forwards';
+                setTimeout(() => {
+                    messageContainer.innerHTML = '';
+                }, 500);
+            }, 5000);
+        }
+
+        // Contact cards hover effect
+        const contactCards = document.querySelectorAll('.contact-card');
+        contactCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.animation = 'pulse 0.6s ease';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.animation = '';
+            });
+        });
+
+        // Smooth scroll for CTA buttons
+        const ctaButtons = document.querySelectorAll('.cta-btn');
+        ctaButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                this.style.animation = 'pulse 0.3s ease';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 300);
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = entry.target.dataset.animation + ' 1s ease forwards';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.contact-card').forEach((el, index) => {
+            el.dataset.animation = 'fadeInUp';
+            el.style.animationDelay = `${index * 0.2}s`;
+            observer.observe(el);
+        });
+    });
+
+    // Add fadeOut animation
+    const fadeOutKeyframes = `
+    @@keyframes fadeOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+    }`;
+
+    const style = document.createElement('style');
+    style.textContent = fadeOutKeyframes;
+    document.head.appendChild(style);
+</script>

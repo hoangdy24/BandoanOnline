@@ -1,0 +1,44 @@
+﻿@using QlW_BandoanOnline.Models.ViewModels
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+<link href="~/css/Dangnhap.css" rel="stylesheet" />
+<div class="container1">
+    <div class="auth-container1">
+        <div class="auth-box">
+            <div class="tabs">
+                <a asp-action="Dangnhap" asp-controller="Taikhoan" class="tab active">Đăng nhập</a>
+                <a asp-action="Dangky" asp-controller="Taikhoan" class="tab">Đăng ký</a>
+            </div>
+            @model DangnhapViewModel
+            <form asp-action="Dangnhap" asp-controller="TaiKhoan" method="post">
+                <div asp-validation-summary="ModelOnly" class="error-message"></div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input asp-for="Email" placeholder="Nhập email của bạn">
+                    <span asp-validation-for="Email" class="error-message"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Mật Khẩu</label>
+                    <input asp-for="Password" placeholder="Nhập mật khẩu của bạn">
+                    <span asp-validation-for="Password" class="error-message"></span>
+                </div>
+
+                <div class="form-group">
+                    <div class="forgot-password">
+                        <a asp-action="Quenmatkhau" asp-controller="Taikhoan">Quên mật khẩu?</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Đăng nhập</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

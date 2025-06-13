@@ -1,0 +1,100 @@
+﻿@model QlW_BandoanOnline.Models.DanhGiaDonHang
+
+<link href="~/css/DanhGiaDonHang.css" rel="stylesheet" />
+
+@{
+    ViewData["Title"] = "Đánh giá đơn hàng";
+}
+
+<div class="review-container">
+    <div class="review-header">
+        <h2>Đánh giá đơn hàng</h2>
+        <p class="review-subtitle">Chia sẻ trải nghiệm của bạn để chúng tôi phục vụ tốt hơn</p>
+    </div>
+
+    <div class="form-section">
+        <form asp-action="Create" id="reviewForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="MaDonHang" />
+            <input type="hidden" asp-for="UserId" />
+            <div class="form-group">
+                <div class="rating-section">
+                    <label class="control-label">Bạn đánh giá như thế nào về đơn hàng này?</label>
+                    <div class="rating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <input type="radio" asp-for="Diem" id="star@(i)" value="@i" />
+                            <label for="star@(i)" title="@i sao">⭐</label>
+                        }
+                    </div>
+                    <div class="rating-text" id="ratingText"></div>
+                    <span asp-validation-for="Diem" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="NoiDung" class="control-label">Chia sẻ cảm nhận của bạn</label>
+                <textarea asp-for="NoiDung" class="form-control" rows="5"
+                          placeholder="Hãy cho chúng tôi biết về chất lượng món ăn, dịch vụ giao hàng, và trải nghiệm tổng thể của bạn..."></textarea>
+                <span asp-validation-for="NoiDung" class="text-danger"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-paper-plane"></i> Gửi đánh giá
+                </button>
+                <a asp-action="Details" asp-controller="DonHang" asp-route-id="@Model.MaDonHang" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ratingInputs = document.querySelectorAll('input[name="Diem"]');
+        const ratingText = document.getElementById('ratingText');
+        const ratingMessages = {
+            1: "😞 Không hài lòng - Chúng tôi sẽ cải thiện!",
+            2: "😐 Tạm được - Vẫn có thể làm tốt hơn",
+            3: "😊 Hài lòng - Cảm ơn bạn!",
+            4: "😄 Rất hài lòng - Tuyệt vời!",
+            5: "🤩 Xuất sắc - Bạn là khách hàng tuyệt vời!"
+        };
+
+        ratingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const rating = this.value;
+                ratingText.textContent = ratingMessages[rating];
+                ratingText.classList.add('show');
+            });
+        });
+
+        // Form submission animation
+        const form = document.getElementById('reviewForm');
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('.btn-submit');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+            submitBtn.disabled = true;
+        });
+
+        // Add hover effects to form elements
+        const formControls = document.querySelectorAll('.form-control');
+        formControls.forEach(control => {
+            control.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+
+            control.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

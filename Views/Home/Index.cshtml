@@ -1,0 +1,289 @@
+﻿@using Newtonsoft.Json
+@using QlW_BandoanOnline.Models.ViewModels
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+<head>
+    <link href="~/css/Trangchu.css" rel="stylesheet"/>
+    <title>Thực đơn của chúng tôi</title>
+</head>
+@model TrangChuViewModel
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Đặt món ăn yêu thích ngay hôm nay!</h1>
+            <p>Thức ăn ngon, giao hàng thần tốc, giá bình dân – Food BCTECH cam kết mang đến trải nghiệm ẩm thực học sinh, sinh viên đậm vị, chất lừ và đáng nhớ nhất!</p>
+            <a asp-action="Index" asp-controller="Thucdon" class="btn">Đặt hàng ngay</a>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Danh mục món ăn</h2>
+            <p>Khám phá các danh mục món ăn phong phú của chúng tôi</p>
+        </div>
+        <div class="categories">
+            @foreach (var item in Model.DanhMucList)
+            {
+                <div class="category-card">
+                    <img src="~/images/Danhmuc/@item.HinhAnh" alt="@item.TenDanhMuc" class="category-img">
+                    <div class="category-info">
+                        <h3>@item.TenDanhMuc</h3>
+                        <p>@item.MoTa</p>
+                        <a asp-action="Index" asp-controller="Thucdon" asp-route-MaDanhMuc="@item.MaDanhMuc" class="btn">Xem thêm</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Popular Products -->
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Món ăn phổ biến</h2>
+            <p>Những món ăn được yêu thích nhất tại cửa hàng chúng tôi</p>
+        </div>
+        <div class="products">
+            @foreach (var item in Model.SanPhamBanChay)
+            {
+                <a href="@Url.Action("ChiTietSanPham", "Thucdon", new { id = item.MaSanPham })">
+                <div class="product-card">
+                    <img src="~/images/Menu/@item.HinhAnh" alt="Burger phô mai" class="product-img">
+                    <div class="product-info">
+                        <h3>@item.TenSanPham</h3>
+                        <p>@item.MoTa</p>
+                        <div class="price">
+                            <span data-price="@item.GiaBan" style="padding-right: 8px;">
+                                @item.GiaBan.ToString("N0")
+                            </span>
+                                @{
+                                    var model = new ThemGioHangViewModel { MaSanPham = item.MaSanPham };
+                                }
+                                @await Html.PartialAsync("_ThemGioHangDon", model)
+                        </div>
+                    </div>
+                </div>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <h2>Đặt hàng ngay hôm nay</h2>
+        <p>Tận hưởng ưu đãi đặc biệt khi đặt hàng qua website của chúng tôi. Giảm 20% cho đơn hàng đầu tiên!</p>
+        <a asp-action="Index" asp-controller="ThucDon" class="btn">Đến website đặt hàng ngay</a>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Khách hàng nói gì về chúng tôi</h2>
+            <p>Đánh giá từ những khách hàng thân thiết</p>
+        </div>
+
+        <div class="testimonials">
+            @foreach (var khachhang in Model.DanhGiaMoiNhat)
+            {
+                <div class="testimonial-card">
+                    <p>@khachhang.PhanHoi</p>
+                    <div class="user">
+                        <div class="user-info">
+                            <h4>@khachhang.User.HoTen</h4>
+                            <div class="star-rating">
+                                @{
+                                    int diem = khachhang.Diem;
+                                    for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= diem)
+                                        {
+                                            <span class="star filled">★</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="star">★</span>
+                                        }
+                                    }
+                                }
+                            </div>
+                            <small class="rating-text">@khachhang.NoiDung</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<script>
+    // Script.js - JavaScript animations cho trang chủ website Ăn Tới Bến
+    document.addEventListener('DOMContentLoaded', function () {
+        const header = document.getElementById('main-header');
+        const scrollThreshold = 50;
+
+        function handleScroll() {
+            if (window.scrollY > scrollThreshold) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }
+
+        // Scroll Reveal Animation
+        function revealOnScroll() {
+            const elements = document.querySelectorAll('.section-title, .category-card, .product-card, .testimonial-card');
+            const windowHeight = window.innerHeight;
+
+            elements.forEach((element, index) => {
+                element.style.setProperty('--animation-order', index % 4 + 1);
+                const elementPosition = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+
+                if (elementPosition < windowHeight - elementVisible) {
+                    element.classList.add('active');
+                }
+            });
+        }
+
+        // Hover effects
+        document.querySelectorAll('.category-card, .product-card').forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                this.classList.add('hover');
+            });
+            card.addEventListener('mouseleave', function () {
+                this.classList.remove('hover');
+            });
+        });
+
+        // Add to cart animation
+        const addToCartButtons = document.querySelectorAll('.add-to-cart');
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const cartIcon = document.querySelector('.cart-icon');
+                const cartCount = document.querySelector('.cart-count');
+
+                if (cartIcon) {
+                    cartIcon.classList.add('bump');
+                    setTimeout(() => cartIcon.classList.remove('bump'), 300);
+                }
+
+                if (cartCount) {
+                    cartCount.classList.add('updated');
+                    setTimeout(() => cartCount.classList.remove('updated'), 500);
+                }
+
+                const productCard = this.closest('.product-card');
+                const productImg = productCard?.querySelector('.product-img');
+
+                if (productImg && cartIcon) {
+                    const flyingImg = document.createElement('img');
+                    flyingImg.src = productImg.src;
+                    flyingImg.style.position = 'fixed';
+                    flyingImg.style.zIndex = '9999';
+                    flyingImg.style.width = '50px';
+                    flyingImg.style.height = '50px';
+                    flyingImg.style.objectFit = 'cover';
+                    flyingImg.style.borderRadius = '50%';
+                    flyingImg.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+
+                    const rect = productImg.getBoundingClientRect();
+                    flyingImg.style.top = rect.top + 'px';
+                    flyingImg.style.left = rect.left + 'px';
+                    document.body.appendChild(flyingImg);
+
+                    const cartRect = cartIcon.getBoundingClientRect();
+                    flyingImg.style.transition = 'all 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+                    setTimeout(() => {
+                        flyingImg.style.top = cartRect.top + 'px';
+                        flyingImg.style.left = cartRect.left + 'px';
+                        flyingImg.style.width = '20px';
+                        flyingImg.style.height = '20px';
+                        flyingImg.style.opacity = '0.5';
+                    }, 10);
+
+                    setTimeout(() => {
+                        document.body.removeChild(flyingImg);
+                    }, 800);
+                }
+            });
+        });
+
+        // Parallax effect
+        const hero = document.querySelector('.hero');
+        function parallaxEffect() {
+            if (hero) {
+                hero.style.backgroundPositionY = window.scrollY * 0.3 + 'px';
+            }
+        }
+
+        // Testimonials slider
+        const testimonialsContainer = document.querySelector('.testimonials');
+        if (testimonialsContainer && testimonialsContainer.children.length > 1) {
+            let currentIndex = 0;
+            const testimonialCards = testimonialsContainer.querySelectorAll('.testimonial-card');
+
+            function showNextTestimonial() {
+                testimonialCards.forEach(card => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(30px)';
+                });
+
+                currentIndex = (currentIndex + 1) % testimonialCards.length;
+                testimonialCards[currentIndex].style.opacity = '1';
+                testimonialCards[currentIndex].style.transform = 'translateX(0)';
+            }
+
+            testimonialCards[0].style.opacity = '1';
+            testimonialCards[0].style.transform = 'translateX(0)';
+            setInterval(showNextTestimonial, 5000);
+        }
+
+        // Count-up effect for prices
+        const priceElements = document.querySelectorAll('.price span');
+        priceElements.forEach(element => {
+            const finalPrice = parseFloat(element.getAttribute('data-price')) || 0;
+            let currentPrice = 0;
+            const duration = 1000;
+            const frameRate = 16;
+            const increment = finalPrice / (duration / frameRate);
+            let timer;
+
+            element.textContent = '0';
+
+            function updatePrice() {
+                currentPrice += increment;
+                if (currentPrice >= finalPrice) {
+                    currentPrice = finalPrice;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(currentPrice).toLocaleString('vi-VN');
+            }
+
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        timer = setInterval(updatePrice, frameRate);
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            observer.observe(element);
+        });
+
+        // Gán các sự kiện
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', revealOnScroll);
+        window.addEventListener('scroll', parallaxEffect);
+        window.addEventListener('resize', revealOnScroll);
+
+        // Khởi tạo khi load
+        handleScroll();
+        revealOnScroll();
+    });
+</script>

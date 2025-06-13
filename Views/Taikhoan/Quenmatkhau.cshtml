@@ -1,0 +1,33 @@
+﻿@model QlW_BandoanOnline.Models.ViewModels.QuenMatKhauViewModel
+@{
+    ViewData["Title"] = "Quên mật khẩu";
+}
+    <link href="~/css/Dangnhap.css" rel="stylesheet" />
+    <br /><br />
+    <div class="container">
+    <div class="auth-container">
+        <div class="form-container" style="max-height: 400px;">
+                <h2 class="page-title">Quên Mật Khẩu</h2>
+                <form asp-action="Quenmatkhau" method="post">
+                    <div class="form-group">
+                        <label asp-for="Email">Email</label>
+                        <input asp-for="Email" type="email" placeholder="Nhập địa chỉ email của bạn">
+                        <span asp-validation-for="Email" class="error-message"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-submit">Gửi email đặt lại mật khẩu</button>
+                </form>
+
+                <div class="text-center" style="padding-top: 15px;">
+                    <a asp-action="Dangnhap" asp-controller="Taikhoan" class="btn-link">
+                        Quay lại đăng nhập
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+<br />
+<br />
+<br />
+<br />
+    <partial name="_ValidationScriptsPartial" />

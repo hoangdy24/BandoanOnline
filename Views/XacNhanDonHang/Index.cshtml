@@ -1,0 +1,483 @@
+﻿@using Newtonsoft.Json
+@using System.Globalization
+@model QlW_BandoanOnline.Models.ViewModels.XacNhanDonHangViewModel
+
+@{
+    ViewData["Title"] = "Xác Nhận Đơn Hàng";
+}
+<style>
+    .container1 {
+        background-color: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        margin-top: 30px;
+        margin-bottom: 30px;
+        align-content: center;
+    }
+    /* Form đặt hàng */
+    .form1 {
+        background-color: #fff;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .td1 {
+        color: #ff6b35;
+        font-weight: 600;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px dashed #f0f0f0;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #555;
+        padding-right: 20px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 6px;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        font-size: 15px;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.15);
+        }
+
+    textarea.form-control {
+        min-height: 5px;
+        min-width: 300px;
+    }
+
+    .text-danger {
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    /* Nút bấm */
+    .btn {
+        border-radius: 25px;
+        padding: 10px 25px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background-color: #FF5722;
+        border: none;
+    }
+
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #E64A19;
+            box-shadow: 0 5px 15px rgba(255, 87, 34, 0.3);
+        }
+
+    .btn-secondary {
+        background-color: #78909C;
+        border: none;
+        font-size: 13px;
+    }
+
+        .btn-secondary:hover, .btn-secondary:focus {
+            background-color: #607D8B;
+            box-shadow: 0 5px 15px rgba(96, 125, 139, 0.3);
+        }
+
+    /* Card đơn hàng */
+    .card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+        background-color: #4CAF50;
+        color: white;
+        font-weight: 600;
+        padding: 15px 20px;
+        border: none;
+    }
+
+        .card-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    /* Bảng sản phẩm */
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+        .table th {
+            border-top: none;
+            color: #546E7A;
+            font-weight: 600;
+            padding: 12px 15px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .table td {
+            padding: 15px;
+            vertical-align: middle;
+            font-size: 15px;
+            border-color: #f0f0f0;
+            width: 100%;
+        }
+
+        .table tfoot th {
+            background-color: #f9f9f9;
+            font-weight: 700;
+            color: #333;
+            font-size: 16px;
+            width: 100%;
+        }
+
+    /* Tùy chọn sản phẩm */
+    .text-muted.small {
+        margin-top: 5px;
+        font-size: 13px;
+        color: #757575 !important;
+    }
+
+    /* Animation hiệu ứng */
+    .form-control, .card, .btn {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            transform: translateY(-2px);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Hiệu ứng nổi bật khi hover vào hàng sản phẩm */
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+        .table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+    /* Hiệu ứng khi thanh toán */
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    .mb-3 {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+
+        .modal-content h4 {
+            margin-bottom: 15px;
+            color: #ff6b35;
+        }
+
+    .modal-buttons {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+</style>
+<link href="~/css/Giohang.css" rel="stylesheet" />
+<div class="container xn">
+    <h2 class="td1">Xác Nhận Đơn Hàng</h2>
+
+    <div class="row">
+        <div class="col-md-8">
+            <form id="xacNhanForm" asp-action="XacNhan" method="post" onsubmit="return openConfirmModal(event);" class="form1">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <h3>Thông tin giao hàng</h3>
+                <div class="mb-3">
+                    <label asp-for="HoTen" class="form-label">Tên người nhận: </label>
+                    <input asp-for="HoTen" class="form-control" />
+                    <span asp-validation-for="HoTen" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SoDienThoai" class="form-label">Số điện thoại: </label>
+                    <input asp-for="SoDienThoai" class="form-control" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email: </label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DiaChi" class="form-label">Địa chỉ giao hàng: </label>
+                    <textarea asp-for="DiaChi" class="form-control" rows="1"></textarea>
+                    <span asp-validation-for="DiaChi" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PhuongThucThanhToan" class="form-label"></label>
+                    <select asp-for="PhuongThucThanhToan" asp-items="Html.GetEnumSelectList<QlW_BandoanOnline.Models.PhuongThucThanhToan>()" class="form-select">
+                        <option value="">-- Chọn phương thức thanh toán --</option>
+                    </select>
+                    <span asp-validation-for="PhuongThucThanhToan" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="GhiChu" class="form-label">Ghi chú địa chỉ: </label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="GhiChu" class="text-danger"></span>
+                </div>
+
+                <hr />
+                <h3>Mã khuyến mãi</h3>
+                <div class="mb-3 d-flex align-items-end">
+                    <div class="flex-grow-1 me-2">
+                        <label asp-for="MaKhuyenMai" class="form-label">Mã khuyến mãi: </label>
+                        <input asp-for="MaKhuyenMai" class="form-control" id="maKhuyenMaiInput" />
+                    </div>
+                    <button type="button" class="btn btn-info" id="btnApDungKhuyenMai">Áp dụng</button>
+                </div>
+                <div class="mb-3">
+                    <span id="khuyenMaiMessage" class="@(Model.ThongBaoKhuyenMai?.Contains("thành công") == true ? "text-success" : "text-danger")">@Model.ThongBaoKhuyenMai</span>
+                </div>
+
+                <input type="hidden" asp-for="GiamGia" id="hiddenGiamGia" value="@Model.GiamGia" />
+                <input type="hidden" asp-for="MaKhuyenMai" id="hiddenMaKhuyenMai" value="@Model.MaKhuyenMai" />
+                <input type="hidden" asp-for="TienGiaoHang" />
+                <input type="hidden" asp-for="TongTien" id="hiddenTongTien" value="@Model.TongTien" />
+                <input type="hidden" asp-for="TongTienTruocGiamGia" id="hiddenTongTienTruocGiamGia" value="@Model.TongTienTruocGiamGia" />
+
+                <button type="submit" class="btn btn-primary">Xác nhận đơn hàng</button>
+                <a asp-action="Index" asp-controller="GioHang" class="btn btn-secondary">Quay lại giỏ hàng</a>
+            </form>
+        </div>
+        <br />
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 style="color: white;">Đơn hàng của bạn</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>SL</th>
+                                <th style="text-align:right;">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.GioHang != null && Model.GioHang.GioHangItem != null)
+                            {
+                                @foreach (var item in Model.GioHang.GioHangItem.Where(i => i.SanPham != null))
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.TenSanPham
+                                            @if (!string.IsNullOrEmpty(item.TuyChon))
+                                            {
+                                                <div class="text-muted small">
+                                                    @foreach (var tc in Newtonsoft.Json.JsonConvert.DeserializeObject<List<QlW_BandoanOnline.Models.TuyChonGioHang>>(item.TuyChon))
+                                                    {
+                                                        <div>+ @tc.TenTuyChon (@tc.GiaThem.ToString("N0") đ)</div>
+                                                    }
+                                                </div>
+                                            }
+                                        </td>
+                                        <td style="text-align:center;">@item.SoLuong</td>
+                                        <td style="text-align:right;">@item.ThanhTien.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="2" style="text-align:left;">Tổng tiền sản phẩm:</th>
+                                <th style="text-align:right;" id="tongTienTruocGiamGiaDisplay">@Model.TongTienTruocGiamGia.ToString("N0") đ</th>
+                            </tr>
+                            <tr>
+                                <th colspan="2" style="text-align:left;">Tiền giao hàng:</th>
+                                <th style="text-align:right;" id="tongTienTruocGiamGiaDisplay">@Model.TienGiaoHang.ToString("N0") đ</th>
+                            </tr>
+                             <tr id="giamGiaRow">
+                                <th colspan="2" style="text-align:left;">Giảm giá:</th>
+                                <th style="text-align:right; color: red;" id="giamGiaDisplay">-@Model.GiamGia.ToString("N0") đ</th>
+                             </tr>
+                            <tr>
+                                <th colspan="2" style="text-align:left;">Tổng thanh toán:</th>
+                                <th style="text-align:right;" id="tongThanhToanDisplay">@Model.TongTien.ToString("N0") đ</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-content">
+        <h4>Xác nhận thanh toán</h4>
+        <p>Bạn có chắc chắn muốn thanh toán đơn hàng này không?</p>
+        <div class="modal-buttons">
+            <button id="confirmYes" class="btn btn-primary">Có</button>
+            <button id="confirmNo" class="btn btn-secondary">Không</button>
+        </div>
+    </div>
+</div>
+
+<!-- Giữ nguyên phần modal xác nhận -->
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+            document.getElementById("btnApDungKhuyenMai").addEventListener("click", async function () {
+            const maKhuyenMai = document.getElementById("maKhuyenMaiInput")?.value;
+            const khuyenMaiMessage = document.getElementById("khuyenMaiMessage");
+            const tienGiaoHang = parseFloat(document.querySelector("input[name='TienGiaoHang']").value) || 20000;
+            if (!khuyenMaiMessage) {
+                console.error("Không tìm thấy phần tử khuyenMaiMessage");
+                return;
+            }
+
+            const tongTienTruocGiamGiaDisplay = document.getElementById("tongTienTruocGiamGiaDisplay");
+            const giamGiaDisplay = document.getElementById("giamGiaDisplay");
+            const tongThanhToanDisplay = document.getElementById("tongThanhToanDisplay");
+            const giamGiaRow = document.getElementById("giamGiaRow");
+
+            const hiddenGiamGia = document.getElementById("hiddenGiamGia");
+            const hiddenTongTien = document.getElementById("hiddenTongTien");
+            const hiddenMaKhuyenMai = document.getElementById("hiddenMaKhuyenMai");
+            const hiddenTongTienTruocGiamGia = document.getElementById("hiddenTongTienTruocGiamGia");
+
+            if (!maKhuyenMai) {
+                khuyenMaiMessage.textContent = "Vui lòng nhập mã khuyến mãi.";
+                khuyenMaiMessage.className = "text-danger";
+
+                if (hiddenGiamGia) hiddenGiamGia.value = 0;
+                if (hiddenMaKhuyenMai) hiddenMaKhuyenMai.value = '';
+                if (hiddenTongTien && hiddenTongTienTruocGiamGia) {
+                    hiddenTongTien.value = parseFloat(hiddenTongTienTruocGiamGia.value) + tienGiaoHang;
+                }
+
+                if (giamGiaRow) giamGiaRow.style.display = 'none';
+                if (tongThanhToanDisplay && hiddenTongTienTruocGiamGia) {
+                    const total = parseFloat(hiddenTongTienTruocGiamGia.value) + tienGiaoHang;
+                    tongThanhToanDisplay.textContent = total.toLocaleString('vi-VN') + ' đ';
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch(`/XacNhanDonHang/KiemTraKhuyenMai?maKhuyenMai=${maKhuyenMai}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    khuyenMaiMessage.textContent = data.message;
+                    khuyenMaiMessage.className = "text-success";
+
+                    let tongTienTruocGiam = hiddenTongTienTruocGiamGia ? parseFloat(hiddenTongTienTruocGiamGia.value) : 0;
+                    let giamGia = 0;
+
+                    if (data.giaTri.includes('%')) {
+                        const percent = parseFloat(data.giaTri.replace('%', ''));
+                        giamGia = tongTienTruocGiam * (percent / 100);
+                    } else {
+                        giamGia = parseFloat(data.giaTri);
+                    }
+
+                    const tongThanhToan = tongTienTruocGiam - giamGia + tienGiaoHang;
+
+                    if (hiddenGiamGia) hiddenGiamGia.value = giamGia;
+                    if (hiddenTongTien) hiddenTongTien.value = tongThanhToan;
+                    if (hiddenMaKhuyenMai) hiddenMaKhuyenMai.value = maKhuyenMai;
+
+                    if (giamGiaDisplay) giamGiaDisplay.textContent = '- ' + giamGia.toLocaleString('vi-VN') + ' đ';
+                    if (giamGiaRow) {
+                        giamGiaRow.style.display = 'table-row';
+                    }
+                    if (tongThanhToanDisplay) {
+                        tongThanhToanDisplay.textContent = tongThanhToan.toLocaleString('vi-VN') + ' đ';
+                    }
+
+                } else {
+                    khuyenMaiMessage.textContent = data.message;
+                    khuyenMaiMessage.className = "text-danger";
+
+                    if (hiddenGiamGia) hiddenGiamGia.value = 0;
+                    if (hiddenMaKhuyenMai) hiddenMaKhuyenMai.value = '';
+                    if (hiddenTongTien && hiddenTongTienTruocGiamGia) {
+                        hiddenTongTien.value = parseFloat(hiddenTongTienTruocGiamGia.value) + tienGiaoHang;
+                    }
+
+                    if (giamGiaRow) giamGiaRow.style.display = 'none';
+                    if (tongThanhToanDisplay && hiddenTongTienTruocGiamGia) {
+                        const total = parseFloat(hiddenTongTienTruocGiamGia.value) + tienGiaoHang;
+                        tongThanhToanDisplay.textContent = total.toLocaleString('vi-VN') + ' đ';
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking promotion code:", error);
+                khuyenMaiMessage.textContent = "Đã xảy ra lỗi khi kiểm tra mã khuyến mãi.";
+                khuyenMaiMessage.className = "text-danger";
+
+                if (hiddenGiamGia) hiddenGiamGia.value = 0;
+                if (hiddenMaKhuyenMai) hiddenMaKhuyenMai.value = '';
+                if (hiddenTongTien && hiddenTongTienTruocGiamGia) {
+                    hiddenTongTien.value = parseFloat(hiddenTongTienTruocGiamGia.value) + tienGiaoHang;
+                }
+
+                if (giamGiaRow) giamGiaRow.style.display = 'none';
+                if (tongThanhToanDisplay && hiddenTongTienTruocGiamGia) {
+                    const total = parseFloat(hiddenTongTienTruocGiamGia.value) + tienGiaoHang;
+                    tongThanhToanDisplay.textContent = total.toLocaleString('vi-VN') + ' đ';
+                }
+            }
+        });
+    </script>
+}

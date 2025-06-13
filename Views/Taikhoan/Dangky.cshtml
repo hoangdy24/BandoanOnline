@@ -1,0 +1,63 @@
+﻿@using QlW_BandoanOnline.Models.ViewModels
+@model DangkyViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+<link href="~/css/Dangnhap.css" rel="stylesheet" />
+<div class="container1">
+    <div class="auth-container1">
+        <div class="auth-box">
+            <div class="tabs">
+                <a asp-action="Dangnhap" asp-controller="Taikhoan" class="tab">Đăng nhập</a>
+                <a asp-action="Dangky" asp-controller="Taikhoan" class="tab active">Đăng ký</a>
+            </div>
+        
+            <div asp-validation-summary="ModelOnly" class="error-message"></div>
+            <form asp-action="Dangky" asp-controller="TaiKhoan">
+                <div class="form-group">
+                    <label>Họ Và Tên</label>
+                    <input asp-for="HoTen" placeholder="Nhập họ và tên của bạn">
+                    <span asp-validation-for="HoTen" class="error-message"/>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" placeholder="Nhập địa chỉ email của bạn">
+                    <span asp-validation-for="Email" class="error-message"/>
+                </div>
+                <div class="form-group">
+                    <label asp-for="SoDienThoai"></label>
+                    <input asp-for="SoDienThoai" class="form-control" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                        <label asp-for="NgaySinh"></label>
+                        <input asp-for="NgaySinh" type="date" class="form-control" />
+                        <span asp-validation-for="NgaySinh" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                        <label asp-for="DiaChi"></label>
+                        <input asp-for="DiaChi" class="form-control" />
+                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Mật Khẩu</label>
+                    <input asp-for="Password" placeholder="Tạo mật khẩu">
+                    <span asp-validation-for="Password" class="error-message"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Xác Nhận Mật Khẩu</label>
+                    <input asp-for="ConfirmPassword" placeholder="Nhập lại mật khẩu">
+                    <span asp-validation-for="ConfirmPassword" class="error-message"/>
+                </div>
+
+                <button type="submit" class="btn">Đăng ký</button>
+            </form>
+        </div>
+        </div>
+    </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

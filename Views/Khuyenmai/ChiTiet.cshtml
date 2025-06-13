@@ -1,0 +1,285 @@
+﻿@model QlW_BandoanOnline.Models.KhuyenMai
+@{
+    ViewData["Title"] = @Model.TenKhuyenMai;
+}
+<head>
+    <title>Chi tiết khuyến mãi - Món Ngon Online</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <link href="~/css/ctKhuyenMai.css" rel="stylesheet" />
+</head>
+<div class="banner">
+    <div class="container">
+        <h1 style="color: #ffffff;">Khuyến Mãi Hấp Dẫn</h1>
+        <p class="lead">Tiết kiệm ngay hôm nay với các ưu đãi đặc biệt từ Món Ngon Online</p>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header">
+            <h2 class="mb-0" style="color: #f1f1f1;">@Model.TenKhuyenMai</h2>
+        </div>
+        <div class="card-body">
+            @if (ViewBag.HetHieuLuc != null && ViewBag.HetHieuLuc)
+            {
+                <div class="alert-expired">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Lưu ý:</strong> Chương trình khuyến mãi này đã hết hiệu lực
+                </div>
+            }
+
+            <!-- Thêm hình ảnh sự kiện khuyến mãi -->
+            <div class="promo-image">
+                @if (!string.IsNullOrEmpty(Model.HinhAnh))
+                {
+                    <img src="/images/KhuyenMai/@Model.HinhAnh" alt="@Model.TenKhuyenMai">
+                }
+                else
+                {
+                    <img src="" alt="Khuyến mãi">
+                }
+                <div class="image-overlay">
+                    <div class="image-caption">
+                        @if (Model.LaPhanTram)
+                        {
+                            <span>
+                                Giảm @(Model.GiaTriGiam % 1 == 0
+                               ? Convert.ToInt32(Model.GiaTriGiam)
+                               : Model.GiaTriGiam)%
+                            </span>
+                        }
+                        else
+                        {
+                            <span>Giảm @(Convert.ToInt32(Model.GiaTriGiam).ToString("N0"))đ</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="discount-badge">
+                        @if (Model.LaPhanTram)
+                        {
+                            <span>
+                                Giảm @(Model.GiaTriGiam % 1 == 0
+                               ? Convert.ToInt32(Model.GiaTriGiam)
+                               : Model.GiaTriGiam)%
+                            </span>
+                        }
+                        else
+                        {
+                            <span>Giảm @(Convert.ToInt32(Model.GiaTriGiam).ToString("N0"))đ</span>
+                        }
+                    </div>
+
+                    <div class="promo-details mb-4">
+                        <div class="mb-3">
+                            <label class="text-muted">Mã khuyến mãi:</label>
+                            <div class="promo-code mt-2">
+                                <strong>@Model.MaKhuyenMaiCode</strong>
+                            </div>
+                        </div>
+                        <button onclick="copyPromoCode('@Model.MaKhuyenMaiCode')" class="btn btn-copy">
+                            <i class="fas fa-copy me-1"></i>Sao chép mã
+                        </button>
+                    </div>
+
+                    <div class="description-box">
+                        <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Chi tiết khuyến mãi</h5>
+                        <p>@Model.MoTa</p>
+
+                        @if (Model.SanPham != null)
+                        {
+                            <div class="mt-3">
+                                <span>Áp dụng cho sản phẩm:</span>
+                                <span class="product-badge ms-2">
+                                    <i class="fas fa-pizza-slice me-1"></i>@Model.SanPham.TenSanPham
+                                </span>
+                            </div>
+                        }
+                        else if (Model.DanhMuc != null)
+                        {
+                            <div class="mt-3">
+                                <span>Áp dụng cho danh mục:</span>
+                                <span class="product-badge ms-2">
+                                    <i class="fas fa-th-list me-1"></i>@Model.DanhMuc.TenDanhMuc
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-4 border-left">
+                    <div class="info-side">
+                        <h5 class="mb-4"><i class="fas fa-calendar-alt me-2"></i>Thông tin chương trình</h5>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Ngày bắt đầu</div>
+                                <strong>@Model.NgayBatDau.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-calendar-minus"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Ngày kết thúc</div>
+                                <strong>@Model.NgayKetThuc.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Số lượng còn lại</div>
+                                <strong>@(Model.SoLuong - Model.DaSuDung) mã</strong>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a asp-action="Index" asp-controller="ThucDon" class="btn btn-primary w-100 mb-2">
+                                <i class="fas fa-shopping-cart me-1"></i>Mua hàng ngay
+                            </a>
+                            <a asp-action="Index" asp-controller="KhuyenMai" class="btn btn-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Xem khuyến mãi khác
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suggested Products -->
+    <div class="mt-5">
+        @if (Model.SanPham != null)
+        {
+            <h3 class="mb-4">Sản phẩm áp dụng khuyến mãi</h3>
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        <img src="~/images/Menu/@Model.SanPham.HinhAnh" class="card-img-top" alt="@Model.SanPham.TenSanPham">
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.SanPham.TenSanPham</h5>
+                            <p class="card-text text-muted">@Model.SanPham.MoTa</p>
+                            @if (Model.LaPhanTram)
+                            {
+                                var discountedPrice = Model.SanPham.GiaBan * (1 - Model.GiaTriGiam / 100);
+                                <p class="text-primary fw-bold">
+                                    <span class="text-decoration-line-through text-muted small me-2">@Model.SanPham.GiaBan.ToString("N0") đ</span>
+                                    @discountedPrice.ToString("N0") đ
+                                </p>
+                            }
+                            else
+                            {
+                                var discountedPrice = Model.SanPham.GiaBan - Model.GiaTriGiam;
+                                <p class="text-primary fw-bold">
+                                    <span class="text-decoration-line-through text-muted small me-2">@Model.SanPham.GiaBan.ToString("N0") đ</span>
+                                    @discountedPrice.ToString("N0") đ
+                                </p>
+                            }
+                            @await Html.PartialAsync("_ThemGioHangDon", new QlW_BandoanOnline.Models.ViewModels.ThemGioHangViewModel
+                   {
+                       MaSanPham = Model.SanPham.MaSanPham
+                   })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Model.DanhMuc != null)
+        {
+            <h3 class="mb-4">Sản phẩm trong danh mục @Model.DanhMuc.TenDanhMuc</h3>
+            <div class="row">
+                @foreach (var sanPham in ViewBag.SanPhamDanhMuc)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                            <img src="~/images/Menu/@sanPham.HinhAnh" class="card-img-top" alt="@sanPham.TenSanPham">
+                            <div class="card-body">
+                                <h5 class="card-title">@sanPham.TenSanPham</h5>
+                                <p class="card-text text-muted">@sanPham.MoTa</p>
+                                @if (Model.LaPhanTram)
+                                {
+                                    var discountedPrice = sanPham.GiaBan * (1 - Model.GiaTriGiam / 100);
+                                    <p class="text-primary fw-bold">
+                                        <span class="text-decoration-line-through text-muted small me-2">@sanPham.GiaBan.ToString("N0") đ</span>
+                                        @discountedPrice.ToString("N0") đ
+                                    </p>
+                                }
+                                else
+                                {
+                                    var discountedPrice = sanPham.GiaBan - Model.GiaTriGiam;
+                                    <p class="text-primary fw-bold">
+                                        <span class="text-decoration-line-through text-muted small me-2">@sanPham.GiaBan.ToString("N0") đ</span>
+                                        @discountedPrice.ToString("N0") đ
+                                    </p>
+                                }
+                                @await Html.PartialAsync("_ThemGioHangDon", new QlW_BandoanOnline.Models.ViewModels.ThemGioHangViewModel
+                   {
+                       MaSanPham = sanPham.MaSanPham
+                   })
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <h3 class="mb-4">Sản phẩm được đề xuất</h3>
+            <div class="row">
+                @if (ViewBag.RandomSanPhams != null && ViewBag.RandomSanPhams.Count > 0)
+                {
+                    foreach (var sanPham in ViewBag.RandomSanPhams)
+                    {
+                        <div class="col-md-3 mb-4">
+                            <div class="card h-100">
+                                <img src="~/images/Menu/@sanPham.HinhAnh" class="card-img-top" alt="@sanPham.TenSanPham">
+                                <div class="card-body">
+                                    <h5 class="card-title">@sanPham.TenSanPham</h5>
+                                    <p class="card-text text-muted">@sanPham.MoTa</p>
+                                    <p class="text-primary fw-bold">@sanPham.GiaBan.ToString("N0") đ</p>
+                                    @await Html.PartialAsync("_ThemGioHangDon", new QlW_BandoanOnline.Models.ViewModels.ThemGioHangViewModel
+                   {
+                       MaSanPham = sanPham.MaSanPham
+                   })
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function copyPromoCode(code) {
+        navigator.clipboard.writeText(code).then(function () {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sao chép thành công!',
+                text: 'Mã khuyến mãi đã được sao chép vào clipboard.',
+                timer: 2000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        }, function () {
+            Swal.fire({
+                icon: 'error',
+                title: 'Thất bại!',
+                text: 'Không thể sao chép mã, vui lòng thử lại.',
+                confirmButtonText: 'OK'
+            });
+        });
+    }
+</script>

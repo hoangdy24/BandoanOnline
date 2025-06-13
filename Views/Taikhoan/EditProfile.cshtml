@@ -1,0 +1,67 @@
+﻿@model ApplicationUser
+@{
+    ViewData["Title"] = "Chỉnh sửa thông tin";
+}
+<link href="~/css/Thongtinnguoidung.css" rel="stylesheet" />
+
+<main class="main-content">
+    <div class="container">
+        <div class="account-info-container">
+            <div class="account-header">
+                <h2 class="account-title" style="color: white;">Chỉnh sửa thông tin</h2>
+            </div>
+            <div class="account-content">
+                <form asp-action="EditProfile" method="post">
+                    <div asp-validation-summary="ModelOnly" class="error-message"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="info-group">
+                        <label asp-for="HoTen" class="info-label">Họ và tên</label>
+                        <input asp-for="HoTen" class="form-control" placeholder="Nhập họ tên" />
+                        <span asp-validation-for="HoTen" class="error-message"></span>
+                    </div>
+
+                    <div class="info-group">
+                        <label asp-for="Email" class="info-label">Email</label>
+                        <input asp-for="Email" class="form-control" readonly />
+                        <span asp-validation-for="Email" class="error-message"></span>
+                    </div>
+
+                    <div class="info-group">
+                        <label asp-for="PhoneNumber" class="info-label">Số điện thoại</label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="Nhập số điện thoại" />
+                        <span asp-validation-for="PhoneNumber" class="error-message"></span>
+                    </div>
+
+                    <div class="info-group">
+                        <label asp-for="NgaySinh" class="info-label">Ngày sinh</label>
+                        <input asp-for="NgaySinh" type="date" class="form-control" />
+                        <span asp-validation-for="NgaySinh" class="error-message"></span>
+                    </div>
+
+                    <div class="info-group">
+                        <label asp-for="DiaChi" class="info-label">Địa chỉ</label>
+                        <input asp-for="DiaChi" class="form-control" placeholder="Nhập địa chỉ" />
+                        <span asp-validation-for="DiaChi" class="error-message"></span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="edit-btn">
+                            <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                        </button>
+                        &ensp;
+                        <a asp-action="Index" class="edit-btn">
+                            <i class="fa-solid fa-xmark"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

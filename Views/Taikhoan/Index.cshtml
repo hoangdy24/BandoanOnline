@@ -1,0 +1,49 @@
+﻿<link href="~/css/Thongtinnguoidung.css" rel="stylesheet" />
+    @model ApplicationUser
+    @{
+        ViewData["Title"] = "Thông tin tài khoản";
+    }
+    <main class="main-content">
+        <div class="container">
+            @if (Model != null)
+            {
+                <div class="account-info-container">
+                    <div class="account-header">
+                        <h2 class="account-title" style="color: white">Thông Tin Tài Khoản</h2>
+                    </div>
+                    <div class="account-content">
+                        <div class="info-group">
+                            <div class="info-label">Họ và tên</div>
+                            <div class="info-value">@Model.HoTen</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">@Model.Email</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Số điện thoại</div>
+                            <div class="info-value">@Model.PhoneNumber</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Ngày Sinh</div>
+                            <div class="info-value">@Model.NgaySinh.ToString("dd/MM/yyyy")</div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-label">Địa Chỉ</div>
+                            <div class="info-value">@(Model.DiaChi ?? "Chưa cập nhật")</div>
+                        </div>
+                        <div class="action-buttons">
+                            <a asp-action="EditProfile" class="edit-btn">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                Sửa thông tin tài khoản
+                            </a> &ensp;
+                            <a asp-action="ChangePassword" class="edit-btn">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                Đổi mật khẩu
+                            </a>
+                        </div>
+                    </div>
+            </div>
+            }
+        </div>
+    </main>

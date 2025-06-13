@@ -1,0 +1,77 @@
+﻿@model List<QlW_BandoanOnline.Models.DonHang>
+<head>
+    @{
+        ViewData["Title"] = "Theo dõi đơn hàng";
+    }
+<link href="~/css/tcTheoDoiDonHang.css" rel="stylesheet" />
+</head>
+<h2 class="theh">Đơn hàng của tôi</h2>
+<div class="container py-4">
+<h2 class="mb-4">Danh sách đơn hàng</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Bạn chưa có đơn hàng nào. <a asp-controller="Home" asp-action="Index">Tiếp tục mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày đặt</th>
+                        <th>Số lượng</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.MaDonHangPublic</td>
+                            <td>@item.ThoiGianDatHang.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.ChiTietDonHang.Sum(ct => ct.SoLuong)</td>
+                            <td>@((item.ChiTietDonHang.Sum(ct => ct.ThanhTien) + 20000).ToString("N0"))</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(item.TrangThai)">
+                                    @Html.DisplayFor(modelItem => item.TrangThai)
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="ChiTiet" asp-route-id="@item.MaDonHang" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusBadgeClass(TrangThaiDonHang status)
+    {
+        switch (status)
+        {
+            case TrangThaiDonHang.DaXacNhan:
+                return "badge-success";
+            case TrangThaiDonHang.DangChuanBi:
+            case TrangThaiDonHang.DangGiaoHang:
+                return "badge-warning";
+            case TrangThaiDonHang.DaGiaoThanhCong:
+                return "badge-primary";
+            case TrangThaiDonHang.DaHuy:
+            case TrangThaiDonHang.HoanTien:
+                return "badge-danger";
+            default:
+                return "badge-secondary";
+        }
+    }
+}

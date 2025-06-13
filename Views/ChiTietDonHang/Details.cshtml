@@ -1,0 +1,22 @@
+﻿@model QlW_BandoanOnline.Models.ChiTietDonHang
+
+@{
+    ViewData["Title"] = "Chi Tiết Sản Phẩm Trong Đơn Hàng";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div>
+    <h4>Sản Phẩm</h4>
+    <p><strong>Tên Sản Phẩm:</strong> @Model.TenSanPham</p>
+    <p><strong>Giá:</strong> @Model.DonGia.ToString("N0") ₫</p>
+    <p><strong>Số Lượng:</strong> @Model.SoLuong</p>
+    <p><strong>Ghi Chú:</strong> @Model.GhiChu</p>
+    <p><strong>Hình Ảnh:</strong></p>
+    <img src="~/images/Thucdon/@Model.HinhAnh" alt="@Model.TenSanPham" style="width: 200px;" />
+</div>
+
+<div>
+    <h4>Thành Tiền:</h4>
+    <p>@Model.ThanhTien.ToString("N0") ₫</p>
+</div>

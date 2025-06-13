@@ -1,0 +1,565 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Theo dõi đơn hàng" + Model.MaDonHangPublic;
+}
+<link href="~/css/Theodoidonhang.css" rel="stylesheet" />
+@model QlW_BandoanOnline.Models.DonHang
+@using QlW_BandoanOnline.Models
+@using Newtonsoft.Json
+<br />
+<div class="container">
+    <div class="header">
+        <h1 style="color: aliceblue"><i class="fas fa-truck"></i> Theo dõi đơn hàng</h1>
+        <p>Kiểm tra trạng thái đơn hàng của bạn</p>
+    </div>
+
+    <div class="tracking-results">
+        <div class="order-info">
+            <h2><i class="fas fa-receipt"></i> Thông tin đơn hàng #@Model.MaDonHangPublic</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div>
+                    <p><strong><i class="fas fa-calendar-alt"></i> Ngày đặt:</strong> @Model.ThoiGianDatHang.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p><strong><i class="fas fa-user"></i> Tên khách hàng:</strong> @Model.HoTenKhach</p>
+                    <p><strong><i class="fas fa-phone"></i> Số điện thoại:</strong> @Model.SoDienThoai</p>
+                </div>
+                <div>
+                    <p><strong><i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng:</strong> @Model.DiaChiGiaoHang</p>
+                    <p><strong><i class="fas fa-envelope"></i> Email:</strong> @Model.Email</p>
+                    <p><strong><i class="fas fa-credit-card"></i> Phương thức thanh toán:</strong> @Model.PhuongThucThanhToan</p>
+                </div>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%); border-radius: 12px; border-left: 4px solid @(Model.DaThanhToan ? "#4CAF50" : "#f44336");">
+                <p>
+                    <strong>
+                        <i class="fas @(Model.DaThanhToan ? "fa-check-circle" : "fa-times-circle")"
+                           style="color: @(Model.DaThanhToan ? "#4CAF50" : "#f44336");"></i>
+                        Trạng thái thanh toán:
+                    </strong>
+                    <span id="paymentStatus" style="color: @(Model.DaThanhToan ? "#4CAF50" : "#f44336"); font-weight: 700;">
+                        @(Model.DaThanhToan ? $"Đã thanh toán ({Model.ThoiGianThanhToan?.ToString("dd/MM/yyyy HH:mm")})" : "Chưa thanh toán")
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <div class="order-status">
+            <h3><i class="fas fa-route"></i> Trạng thái đơn hàng</h3>
+            <p style="font-size: 18px; margin-top: 10px;">
+                <strong>Hiện tại:</strong>
+                <span id="currentStatus" style="color: @GetStatusColor(Model.TrangThai); font-weight: 700; background: rgba(@GetStatusColorRGB(Model.TrangThai), 0.1); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-left: 10px;">
+                    <i class="@GetStatusIcon(Model.TrangThai)"></i> @GetStatusText(Model.TrangThai)
+                </span>
+            </p>
+            <p id="statusUpdateTime" style="font-size: 14px; color: #666; margin-top: 5px;">
+                Cập nhật lúc: @Model.ThoiGianCapNhatTrangThai
+            </p>
+
+            <div class="status-timeline" id="statusTimeline">
+                <div id="progress-line" class="progress-line" style="width: @GetProgressWidth(Model.TrangThai)%;"></div>
+
+                @if (Model.TrangThai == TrangThaiDonHang.DaHuy)
+                {
+                    <!-- Timeline khi đơn hàng bị hủy -->
+                    <div class="status-step step-completed" id="step1">
+                        <div class="step-icon">1</div>
+                        <div class="step-label">Chờ xác nhận</div>
+                    </div>
+                    <div class="status-step step-failed" id="step2">
+                        <div class="step-icon">✕</div>
+                        <div class="step-label">Đã hủy</div>
+                    </div>
+                    <div class="status-step" id="step3">
+                        <div class="step-icon">3</div>
+                        <div class="step-label">Đang giao hàng</div>
+                    </div>
+                    <div class="status-step" id="step4">
+                        <div class="step-icon">4</div>
+                        <div class="step-label">Hoàn thành</div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Timeline bình thường -->
+                    <div class="status-step @GetStepClass(Model.TrangThai, TrangThaiDonHang.ChoXacNhan)" id="step1">
+                        <div class="step-icon">1</div>
+                        <div class="step-label">Chờ xác nhận</div>
+                    </div>
+                    <div class="status-step @GetStepClass(Model.TrangThai, TrangThaiDonHang.DaXacNhan)" id="step2">
+                        <div class="step-icon">2</div>
+                        <div class="step-label">Đã xác nhận</div>
+                    </div>
+                    <div class="status-step @GetStepClass(Model.TrangThai, TrangThaiDonHang.DangGiaoHang)" id="step3">
+                        <div class="step-icon">3</div>
+                        <div class="step-label">Đang giao hàng</div>
+                    </div>
+                    <div class="status-step @GetStepClass(Model.TrangThai, TrangThaiDonHang.DaGiaoThanhCong)" id="step4">
+                        <div class="step-icon">4</div>
+                        <div class="step-label">Hoàn thành</div>
+                    </div>
+                }
+            </div>
+
+            <div id="deliveryInfo" style="margin-top: 30px; padding: 20px; background: rgba(255, 193, 7, 0.1); border-radius: 12px; border-left: 4px solid #FFC107; @(Model.TrangThai == TrangThaiDonHang.DangGiaoHang ? "" : "display: none;")">
+                <p style="margin: 0; color: #F57F17; font-weight: 600;">
+                    <i class="fas fa-info-circle"></i>
+                    Đơn hàng của bạn đang được giao đến địa chỉ.
+                    @if (Model.ThoiGianGiaoDuKien.HasValue)
+                    {
+                        <text>Dự kiến giao hàng trước @Model.ThoiGianGiaoDuKien.Value.ToString("HH:mm") ngày @Model.ThoiGianGiaoDuKien.Value.ToString("dd/MM/yyyy").</text>
+                    }
+                    else
+                    {
+                        <text>Dự kiến giao hàng trong 30-60 phút tới.</text>
+                    }
+                </p>
+            </div>
+        </div>
+
+        <div class="order-details">
+            <h3 style="padding: 20px 30px 0; color: #2b2d42;"><i class="fas fa-list-ul"></i> Chi tiết đơn hàng</h3>
+            <div class="table-responsive">
+                <table class="order-items">
+                    <thead>
+                        <tr>
+                            <th class="product-col" style="color: #2b2d42;"><i class="fas fa-utensils"></i> Sản phẩm</th>
+                            <th class="price-col" style="color: #2b2d42;"><i class="fas fa-tag"></i> Đơn giá</th>
+                            <th class="quantity-col" style="color: #2b2d42;"><i class="fas fa-sort-numeric-up"></i> Số lượng</th>
+                            <th class="total-col" style="color: #2b2d42;"><i class="fas fa-calculator"></i> Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ChiTietDonHang)
+                        {
+                            <tr class="product-row">
+                                <td class="product-col">
+                                    <div class="product-info">
+                                        @if (!string.IsNullOrEmpty(item.HinhAnh))
+                                        {
+                                            <img src="~/images/Menu/@item.HinhAnh" alt="@item.TenSanPham" class="product-image" />
+                                        }
+                                        <div>
+                                            <div class="product-name">@item.TenSanPham</div>
+                                            @if (!string.IsNullOrEmpty(item.TuyChonThem))
+                                            {
+                                                <div class="product-options">
+                                                    @try
+                                                    {
+                                                        var options = JsonConvert.DeserializeObject<List<dynamic>>(item.TuyChonThem);
+                                                        foreach (var opt in options)
+                                                        {
+                                                            <div class="option-item">
+                                                                @if (opt.TenTuyChon != null)
+                                                                {
+                                                                    <span class="option-name">@opt.TenTuyChon</span>
+                                                                }
+                                                                @if (opt.GiaThem > 0)
+                                                                {
+                                                                    <span class="option-price">+@(opt.GiaThem.ToString("N0")) đ</span>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        <div class="text-danger">
+                                                            <small>Lỗi tùy chọn: @ex.Message</small>
+                                                            <small>Dữ liệu: @item.TuyChonThem</small>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(item.GhiChu))
+                                            {
+                                                <div class="product-note">
+                                                    <small><i class="fas fa-sticky-note"></i> Ghi chú: @item.GhiChu</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="price-col">@item.DonGia.ToString("N0") đ</td>
+                                <td class="quantity-col">@item.SoLuong</td>
+                                <td class="total-col" style="font-weight: 700; color: #ff6b35;">@item.ThanhTien.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot style="background: #f8f9fa;">
+                        <tr class="subtotal-row">
+                            <td colspan="3" style="text-align: left; font-weight: 600; padding: 15px;">Tổng tiền sản phẩm:</td>
+                            <td style="font-weight: 700; font-size: 16px; color: #2b2d42;">@Model.ChiTietDonHang.Sum(ct => ct.ThanhTien).ToString("N0") đ</td>
+                        </tr>
+                        <tr class="shipping-row">
+                            <td colspan="3" style="text-align: left; font-weight: 600; padding: 15px;">Phí vận chuyển:</td>
+                            <td style="font-weight: 700; font-size: 16px; color: #2b2d42;">20,000 đ</td>
+                        </tr>
+                        <tr class="total-row" style="background: linear-gradient(135deg, #ff6b35 0%, #ff8c61 100%); color: white;">
+                            <td colspan="3" style="text-align: left; font-weight: 700; font-size: 18px; padding: 20px;">
+                                <i class="fas fa-receipt"></i> TỔNG THANH TOÁN:
+                            </td>
+                            <td style="font-weight: 900; font-size: 20px; color: white;">
+                                @((Model.ChiTietDonHang.Sum(ct => ct.ThanhTien) + 20000).ToString("N0")) đ
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="order-actions">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-continue">
+                <i class="fas fa-shopping-bag"></i> Tiếp tục mua sắm
+            </a>
+
+            <form asp-action="HuyDonHang" method="post" style="display: @(Model.TrangThai == TrangThaiDonHang.ChoXacNhan ? "inline" : "none");" class="cancel-btn">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.MaDonHang" />
+                <button type="submit" class="btn" style="background: #dc3545;height: 50px;">
+                    <i class="fas fa-times"></i> Hủy đơn hàng
+                </button>
+            </form>
+
+            @if (Model.PhuongThucThanhToan == PhuongThucThanhToan.VNPay && Model.DaThanhToan == false)
+            {
+                <a asp-action="PaymentWithVnPay" asp-controller="ThanhToan" asp-route-id="@Model.MaDonHang" class="btn" style="background: #1A73E8; @(Model.TrangThai == TrangThaiDonHang.DaHuy ? "display: none" : "")" id="vnpayBtn">
+                    <i class="fas fa-credit-card"></i> Thanh toán VNPay
+                </a>
+            }
+
+            <form asp-action="YeuCauHoanTien" method="post" style="display: @(Model.DaThanhToan && Model.TrangThai == TrangThaiDonHang.DaHuy ? "inline" : "none");" class="refund-btn">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.MaDonHang" />
+                <button type="submit" class="btn" style="background: #9C27B0;">
+                    <i class="fas fa-money-bill-wave"></i> Yêu cầu hoàn tiền
+                </button>
+            </form>
+
+            <a asp-action="Create" asp-controller="DanhGiaDonHang" asp-route-maDonHang="@Model.MaDonHang" class="btn rate-btn"
+               style="background: #6f42c1; @(Model.TrangThai == TrangThaiDonHang.DaGiaoThanhCong && !(ViewBag.DaDanhGia ?? false) ? "" : "display: none")">
+                <i class="fas fa-star"></i> Đánh giá đơn hàng
+            </a>
+
+            <a asp-action="Index" asp-controller="LienHe" class="btn" style="background: #17a2b8;">
+                <i class="fas fa-headset"></i> Liên hệ hỗ trợ
+            </a>
+        </div>
+    </div>
+</div>
+@section Scripts {
+<script>
+    // Cấu hình toastr
+    toastr.options = {
+        positionClass: "toast-bottom-right",
+        timeOut: 5000,
+        extendedTimeOut: 1000,
+        closeButton: true,
+        progressBar: true
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Kết nối SignalR
+        const orderId = "@Model.MaDonHang";
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/orderHub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        // Xử lý khi nhận được cập nhật trạng thái
+        connection.on("OrderStatusUpdated", (update) => {
+            if (update.orderId === orderId) {
+                // Hiển thị thông báo
+                toastr.success(`Trạng thái đơn hàng đã cập nhật: ${update.newStatus}`);
+
+                // Cập nhật giao diện
+                updateOrderStatus(update.newStatus, update.updateTime);
+            }
+        });
+
+        connection.onreconnected(async () => {
+                console.log("Reconnected. Joining group again...");
+                await connection.invoke("JoinOrderGroup", orderId.toString());
+        });
+
+        // Kết nối tới SignalR Hub
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+                await connection.invoke("JoinOrderGroup", orderId.toString());
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        start();
+
+        // Xử lý khi đóng tab/trang
+        window.addEventListener('beforeunload', function() {
+            connection.invoke("LeaveOrderGroup", orderId.toString());
+        });
+
+        // Hàm cập nhật giao diện khi trạng thái thay đổi
+        function updateOrderStatus(newStatus, updateTime) {
+            // Cập nhật trạng thái hiện tại
+            const statusInfo = getStatusInfo(newStatus);
+            const currentStatusElement = document.getElementById('currentStatus');
+            currentStatusElement.innerHTML = `<i class="${statusInfo.icon}"></i> ${statusInfo.text}`;
+            currentStatusElement.style.color = statusInfo.color;
+            currentStatusElement.style.background = `rgba(${hexToRgb(statusInfo.color)}, 0.1)`;
+
+            // Cập nhật thời gian
+            const updateDate = new Date(updateTime);
+            document.getElementById('statusUpdateTime').textContent = `Cập nhật lúc: ${formatDate(updateDate)}`;
+
+            // Cập nhật timeline
+            updateTimeline(newStatus);
+
+            // Cập nhật nút hành động
+            updateActionButtons(newStatus);
+
+            // Cập nhật thông tin giao hàng nếu cần
+            if (newStatus === 'DangGiaoHang') {
+                document.getElementById('deliveryInfo').style.display = 'block';
+            } else {
+                document.getElementById('deliveryInfo').style.display = 'none';
+            }
+
+            // Thêm hiệu ứng cập nhật
+            currentStatusElement.classList.add('status-updating');
+            setTimeout(() => {
+                currentStatusElement.classList.remove('status-updating');
+            }, 1000);
+        }
+
+        // Hàm cập nhật timeline
+        function updateTimeline(newStatus) {
+            const statusOrder = ['ChoXacNhan', 'DaXacNhan', 'DangGiaoHang', 'DaGiaoThanhCong'];
+            const currentIndex = statusOrder.indexOf(newStatus);
+
+            // Reset all steps
+            document.querySelectorAll('.status-step').forEach(step => {
+                step.classList.remove('step-completed', 'step-active', 'step-failed');
+                const icon = step.querySelector('.step-icon');
+                icon.textContent = parseInt(step.id.replace('step', '')); // Reset số
+                icon.style.backgroundColor = '';
+                icon.style.color = '';
+                icon.style.transform = '';
+                icon.style.boxShadow = '';
+            });
+
+            // Nếu đơn hàng bị hủy
+            if (newStatus === 'DaHuy') {
+                document.getElementById('step1').classList.add('step-completed');
+                document.getElementById('step2').classList.add('step-failed');
+                document.getElementById('step2').querySelector('.step-icon').textContent = '✕';
+                document.getElementById('progress-line').style.width = '25%';
+                return;
+            }
+
+            // Cập nhật timeline bình thường
+            statusOrder.forEach((status, index) => {
+                if (index < currentIndex) {
+                    const step = document.getElementById(`step${index+1}`);
+                    step.classList.add('step-completed');
+                    step.querySelector('.step-icon').textContent = '✓';
+                } else if (index === currentIndex) {
+                    document.getElementById(`step${index+1}`).classList.add('step-active');
+                }
+            });
+
+            // Cập nhật progress line
+            const progressWidth = (currentIndex / (statusOrder.length - 1)) * 100;
+            document.getElementById('progress-line').style.width = `${progressWidth}%`;
+
+            // Thêm hiệu ứng cho bước hiện tại
+            if (currentIndex >= 0) {
+                const activeStep = document.getElementById(`step${currentIndex+1}`);
+                const icon = activeStep.querySelector('.step-icon');
+                icon.style.backgroundColor = '#FF9800';
+                icon.style.color = 'white';
+                icon.style.transform = 'scale(1.2)';
+
+                // Thêm hiệu ứng nhấp nháy
+                setInterval(() => {
+                    icon.style.boxShadow = '0 0 0 5px rgba(255, 152, 0, 0.3)';
+                    setTimeout(() => {
+                        icon.style.boxShadow = 'none';
+                    }, 500);
+                }, 1500);
+            }
+        }
+
+        // Hàm cập nhật nút hành động
+        function updateActionButtons(newStatus) {
+            // Ẩn tất cả các nút hành động đặc biệt
+            document.querySelectorAll('.cancel-btn, .refund-btn, .rate-btn, #vnpayBtn').forEach(btn => {
+                btn.style.display = 'none';
+            });
+
+            // Hiển thị nút phù hợp với trạng thái mới
+            if (newStatus === 'ChoXacNhan') {
+                document.querySelector('.cancel-btn').style.display = 'inline';
+            } else if (newStatus === 'DaHuy' && @Json.Serialize(Model.DaThanhToan)) {
+                document.querySelector('.refund-btn').style.display = 'inline';
+            } else if (newStatus === 'DaGiaoThanhCong') {
+                document.querySelector('.rate-btn').style.display = 'inline';
+            }
+
+            // Xử lý nút VNPay
+            if (@Json.Serialize(Model.PhuongThucThanhToan == PhuongThucThanhToan.VNPay && !Model.DaThanhToan) && newStatus !== 'DaHuy') {
+                document.getElementById('vnpayBtn').style.display = 'inline';
+            }
+        }
+
+        // Hàm lấy thông tin trạng thái
+        function getStatusInfo(status) {
+            const statusMap = {
+                'ChoXacNhan': { text: 'Chờ xác nhận', color: '#2196F3', icon: 'fas fa-clock' },
+                'DaXacNhan': { text: 'Đã xác nhận', color: '#4CAF50', icon: 'fas fa-check-circle' },
+                'DangChuanBi': { text: 'Đang chuẩn bị', color: '#FFC107', icon: 'fas fa-utensils' },
+                'DangGiaoHang': { text: 'Đang giao hàng', color: '#FF9800', icon: 'fas fa-truck' },
+                'DaGiaoThanhCong': { text: 'Đã giao thành công', color: '#4CAF50', icon: 'fas fa-check-circle' },
+                'DaHuy': { text: 'Đã hủy', color: '#f44336', icon: 'fas fa-times-circle' },
+                'HoanTien': { text: 'Đang hoàn tiền', color: '#9C27B0', icon: 'fas fa-money-bill-wave' }
+            };
+
+            return statusMap[status] || { text: status, color: '#607D8B', icon: 'fas fa-info-circle' };
+        }
+
+        // Hàm chuyển đổi hex sang rgb
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+
+        // Hàm định dạng ngày tháng
+        function formatDate(date) {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        // Hiệu ứng hover cho product images
+        const productImages = document.querySelectorAll('.product-image');
+        productImages.forEach(img => {
+            img.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1) rotate(2deg)';
+                this.style.transition = 'all 0.3s ease';
+                this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+            });
+
+            img.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) rotate(0deg)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Hiệu ứng cho buttons
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.05)';
+                this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+            });
+
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+                this.style.boxShadow = 'none';
+            });
+        });
+    });
+</script>
+}
+
+@functions {
+    string GetStatusColor(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => "#2196F3",
+            TrangThaiDonHang.DaXacNhan => "#4CAF50",
+            TrangThaiDonHang.DangChuanBi => "#FFC107",
+            TrangThaiDonHang.DangGiaoHang => "#FF9800",
+            TrangThaiDonHang.DaGiaoThanhCong => "#4CAF50",
+            TrangThaiDonHang.DaHuy => "#f44336",
+            TrangThaiDonHang.HoanTien => "#9C27B0",
+            _ => "#607D8B"
+        };
+    }
+
+    string GetStatusColorRGB(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => "33, 150, 243",
+            TrangThaiDonHang.DaXacNhan => "76, 175, 80",
+            TrangThaiDonHang.DangChuanBi => "255, 193, 7",
+            TrangThaiDonHang.DangGiaoHang => "255, 152, 0",
+            TrangThaiDonHang.DaGiaoThanhCong => "76, 175, 80",
+            TrangThaiDonHang.DaHuy => "244, 67, 54",
+            TrangThaiDonHang.HoanTien => "156, 39, 176",
+            _ => "96, 125, 139"
+        };
+    }
+
+    string GetStatusIcon(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => "fas fa-clock",
+            TrangThaiDonHang.DaXacNhan => "fas fa-check-circle",
+            TrangThaiDonHang.DangChuanBi => "fas fa-utensils",
+            TrangThaiDonHang.DangGiaoHang => "fas fa-truck",
+            TrangThaiDonHang.DaGiaoThanhCong => "fas fa-check-circle",
+            TrangThaiDonHang.DaHuy => "fas fa-times-circle",
+            TrangThaiDonHang.HoanTien => "fas fa-money-bill-wave",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+    string GetStatusText(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => "Chờ xác nhận",
+            TrangThaiDonHang.DaXacNhan => "Đã xác nhận",
+            TrangThaiDonHang.DangChuanBi => "Đang chuẩn bị",
+            TrangThaiDonHang.DangGiaoHang => "Đang giao hàng",
+            TrangThaiDonHang.DaGiaoThanhCong => "Đã giao thành công",
+            TrangThaiDonHang.DaHuy => "Đã hủy",
+            TrangThaiDonHang.HoanTien => "Đang hoàn tiền",
+            _ => status.ToString()
+        };
+    }
+
+    string GetStepClass(TrangThaiDonHang currentStatus, TrangThaiDonHang stepStatus)
+    {
+        if (currentStatus == stepStatus)
+            return "step-active";
+
+        if ((int)currentStatus > (int)stepStatus)
+            return "step-completed";
+
+        return "";
+    }
+
+    int GetProgressWidth(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => 0,
+            TrangThaiDonHang.DaHuy => 25,
+            TrangThaiDonHang.DaXacNhan => 25,
+            TrangThaiDonHang.DangChuanBi => 50,
+            TrangThaiDonHang.DangGiaoHang => 75,
+            TrangThaiDonHang.DaGiaoThanhCong => 100,
+            TrangThaiDonHang.HoanTien => 100,
+            _ => 0
+        };
+    }
+}
