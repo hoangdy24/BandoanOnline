@@ -1,0 +1,210 @@
+﻿@model QlW_BandoanOnline.Models.SanPham
+
+@{
+    ViewData["Title"] = "Thêm sản phẩm mới";
+}
+<link href="~/css/Admin/SanPham/FormSP.css" rel="stylesheet" />
+<div class="product-form-container">
+    <div class="product-form-header">
+        <h6 class="product-form-title"><i class="fas fa-plus-circle"></i> @ViewData["Title"]</h6>
+    </div>
+    <div class="product-form-body">
+        <form id="productForm" asp-action="Create" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-info-circle"></i> Thông tin cơ bản</div>
+                <div class="form-group">
+                    <label asp-for="TenSanPham" class="control-label">Tên sản phẩm</label>
+                    <div class="input-with-icon">
+                        <input asp-for="TenSanPham" class="form-control" placeholder="Nhập tên sản phẩm"/>
+                        <i class="fas fa-tag input-icon"></i>
+                    </div>
+                    <span asp-validation-for="TenSanPham" class="text-danger"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label asp-for="MaDanhMuc" class="control-label">Danh mục</label>
+                    <div class="input-with-icon">
+                        <select asp-for="MaDanhMuc" class="form-control custom-select" style="padding-left: 40px;" asp-items="ViewBag.DanhMucList">
+                            <option value="">Chọn danh mục</option>
+                        </select>
+                        <i class="fas fa-folder input-icon"></i>
+                    </div>
+                    <span asp-validation-for="MaDanhMuc" class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-file-alt"></i> Mô tả sản phẩm</div>
+                <div class="form-group">
+                    <textarea asp-for="MoTa" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea>
+                    <span asp-validation-for="MoTa" class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-dollar-sign"></i> Thông tin giá</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="GiaGoc" class="control-label">Giá gốc</label>
+                            <div class="input-with-icon">
+                                <input asp-for="GiaGoc" class="form-control" type="number"  step="1" placeholder="0"/>
+                                <i class="fas fa-tags input-icon"></i>
+                            </div>
+                            <span asp-validation-for="GiaGoc" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="GiaBan" class="control-label">Giá bán</label>
+                            <div class="input-with-icon">
+                                <input asp-for="GiaBan" class="form-control" type="number"  step="1" placeholder="0" />
+                                <i class="fas fa-money-bill-wave input-icon"></i>
+                            </div>
+                            <span asp-validation-for="GiaBan" class="text-danger"></span>
+                            <div id="discount-info" class="mt-2" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-image"></i> Hình ảnh sản phẩm</div>
+                <div class="image-preview-container" id="dropzone">
+                    <input type="file" name="file" id="product-image" class="d-none" accept="image/*" />
+                    
+                    <div class="upload-prompt" id="upload-prompt">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h5>Kéo thả hình ảnh hoặc nhấn để chọn</h5>
+                        <p class="text-muted mb-0">JPG, PNG hoặc GIF (Tối đa 5MB)</p>
+                    </div>
+                    
+                    <div id="image-preview" style="display: none;">
+                        <div class="preview-image-card">
+                            <img id="preview-image" src="#" class="preview-image" alt="Xem trước">
+                            <div class="preview-footer">
+                                <small class="text-muted file-name"></small>
+                                <button type="button" class="btn btn-product-danger remove-image">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-cogs"></i> Cài đặt khác</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="ThoiGianChuanBi" class="control-label">Thời gian chuẩn bị</label>
+                            <div class="input-with-icon">
+                                <input asp-for="ThoiGianChuanBi" class="form-control" placeholder="VD: 15-20 phút" />
+                                <i class="fas fa-clock input-icon"></i>
+                            </div>
+                            <span asp-validation-for="ThoiGianChuanBi" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group pt-4 mt-2">
+                            <label class="best-seller-toggle">
+                                <input type="checkbox" asp-for="IsBestSeller">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Bán chạy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group text-center mt-4">
+                <button type="submit" class="btn btn-product-primary mr-2">
+                    <i class="fas fa-save"></i> Lưu sản phẩm
+                </button>
+                <a asp-action="Index" class="btn btn-product-secondary" style="text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('product-image');
+        const previewImage = document.getElementById('preview-image');
+        const imagePreview = document.getElementById('image-preview');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const fileNameSpan = document.querySelector('.file-name');
+        const removeButton = document.querySelector('.remove-image');
+        const dropzone = document.getElementById('dropzone');
+
+        // Bấm vùng dropzone để chọn file
+        dropzone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Khi chọn file
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Kiểm tra file ảnh
+            if (!file.type.startsWith('image/')) {
+                alert("Vui lòng chọn hình ảnh hợp lệ.");
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("Dung lượng ảnh vượt quá 5MB.");
+                return;
+            }
+
+            // Đọc và gán ảnh preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                imagePreview.style.display = 'block';
+                uploadPrompt.style.display = 'none';
+                fileNameSpan.textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Xóa ảnh
+        removeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            previewImage.src = '#';
+            fileInput.value = '';
+            imagePreview.style.display = 'none';
+            uploadPrompt.style.display = 'block';
+        });
+
+        // Ngăn nhập số thập phân
+        const giaInputs = ['GiaGoc', 'GiaBan'];
+        giaInputs.forEach(name => {
+            const input = document.querySelector(`input[asp-for="${name}"]`);
+            if (input) {
+                input.addEventListener('input', () => {
+                    input.value = input.value.replace(/[^\d]/g, '');
+                });
+            }
+        });
+
+        // Animation phần tử form
+        const formSections = document.querySelectorAll('.form-section');
+        formSections.forEach((section, i) => {
+            section.style.opacity = 0;
+            section.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                section.style.transition = 'all 0.4s ease';
+                section.style.opacity = 1;
+                section.style.transform = 'translateY(0)';
+            }, 100 * i);
+        });
+    });
+</script>

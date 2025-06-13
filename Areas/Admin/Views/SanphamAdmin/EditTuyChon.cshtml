@@ -1,0 +1,122 @@
+@model QlW_BandoanOnline.Models.TuyChonSanPham
+
+@{
+    ViewData["Title"] = "Sửa Tùy Chọn Sản Phẩm";
+}
+<link href="~/css/Admin/SanPham/FormSP.css" rel="stylesheet" />
+
+<div class="product-form-container">
+    <div class="product-form-header">
+        <h6 class="product-form-title"><i class="fas fa-edit"></i> @ViewData["Title"]</h6>
+    </div>
+    <div class="product-form-body">
+        <form asp-action="EditTuyChon" enctype="multipart/form-data">
+            <input type="hidden" asp-for="MaTuyChon" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-info-circle"></i> Thông tin cơ bản</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="TenTuyChon" class="control-label">Tên tùy chọn</label>
+                            <div class="input-with-icon">
+                                <input asp-for="TenTuyChon" class="form-control"/>
+                                <i class="fas fa-pen input-icon"></i>
+                            </div>
+                            <span asp-validation-for="TenTuyChon" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input type="hidden" asp-for="MaSanPham" />
+                            <label class="control-label">Sản phẩm</label>
+                            <div class="input-with-icon">
+                                <input class="form-control" value="@ViewBag.TenSanPham" readonly>
+                                <i class="fas fa-box-open input-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title"><i class="fas fa-cog"></i> Cài đặt tùy chọn</div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="custom-checkbox">
+                                <input asp-for="BatBuoc" />
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">Bắt buộc chọn</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="SoLuongChonToiThieu" class="control-label">Số lượng tối thiểu</label>
+                            <div class="input-with-icon">
+                                <input asp-for="SoLuongChonToiThieu" class="form-control" min="0" placeholder="0" />
+                                <i class="fas fa-sort-numeric-down input-icon"></i>
+                            </div>
+                            <span asp-validation-for="SoLuongChonToiThieu" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="SoLuongChonToiDa" class="control-label">Số lượng tối đa</label>
+                            <div class="input-with-icon">
+                                <input asp-for="SoLuongChonToiDa" class="form-control" min="1" placeholder="1" />
+                                <i class="fas fa-sort-numeric-up input-icon"></i>
+                            </div>
+                            <span asp-validation-for="SoLuongChonToiDa" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group text-center mt-4">
+                <button type="submit" class="btn btn-product-primary mr-2">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
+                <a asp-action="Index" class="btn btn-product-secondary" style="text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, i) => {
+                section.style.opacity = 0;
+                section.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    section.style.transition = 'all 0.4s ease';
+                    section.style.opacity = 1;
+                    section.style.transform = 'translateY(0)';
+                }, 100 * i);
+            });
+
+            // Validate min <= max
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const min = parseInt(document.getElementById('SoLuongChonToiThieu').value) || 0;
+                const max = parseInt(document.getElementById('SoLuongChonToiDa').value) || 1;
+                
+                if (min > max) {
+                    alert('Số lượng chọn tối thiểu không thể lớn hơn số lượng chọn tối đa');
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

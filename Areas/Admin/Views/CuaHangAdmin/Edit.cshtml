@@ -1,0 +1,135 @@
+﻿@model QlW_BandoanOnline.Models.CuaHang
+@{
+    ViewData["Title"] = "Sửa Thông Tin Cửa Hàng";
+}
+<link rel="stylesheet" href="~/css/Admin/CuaHang/SuaCuaHang.css" />
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Sửa Thông Tin Cửa Hàng</h1>
+        </div>
+        <div class="card-body">
+            <div class="status-container">
+                <div>
+                    <p><strong>Trạng thái cửa hàng hiện tại:</strong></p>
+                </div>
+                <div class="status-badge status-open" id="status-badge">Đang mở cửa</div>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="success-animation show-notification" id="successNotification">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <form asp-action="Edit" asp-route-id="@Model.CuaHangId" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="CuaHangId" />
+
+                <div class="form-group">
+                    <label asp-for="CuaHangId" class="form-label">Mã cửa hàng</label>
+                    <input asp-for="CuaHangId" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="TenCuaHang" class="form-label">Tên cửa hàng</label>
+                    <input asp-for="TenCuaHang" class="form-control" required />
+                    <span asp-validation-for="TenCuaHang" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+                    <input asp-for="DiaChi" class="form-control" required />
+                    <span asp-validation-for="DiaChi" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SoDienThoai" class="form-label">Số điện thoại</label>
+                    <input asp-for="SoDienThoai" class="form-control" required pattern="[0-9]{10}" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                </div>
+
+                <div class="time-inputs">
+                    <div class="form-group">
+                        <label asp-for="GioMoCua" class="form-label">Giờ mở cửa</label>
+                        <input asp-for="GioMoCua" type="time" class="form-control" required />
+                        <span asp-validation-for="GioMoCua" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="GioDongCua" class="form-label">Giờ đóng cửa</label>
+                        <input asp-for="GioDongCua" type="time" class="form-control" required />
+                        <span asp-validation-for="GioDongCua" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn" id="saveButton">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Real-time status update based on current time
+        function updateStoreStatus() {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+
+            const openTime = document.getElementById('GioMoCua').value;
+            const closeTime = document.getElementById('GioDongCua').value;
+
+            const [openHours, openMinutes] = openTime.split(':').map(Number);
+            const [closeHours, closeMinutes] = closeTime.split(':').map(Number);
+
+            const openTotalMinutes = openHours * 60 + openMinutes;
+            const closeTotalMinutes = closeHours * 60 + closeMinutes;
+
+            const statusBadge = document.getElementById('status-badge');
+
+            if (currentTime >= openTotalMinutes && currentTime <= closeTotalMinutes) {
+                statusBadge.textContent = 'Đang mở cửa';
+                statusBadge.className = 'status-badge status-open pulse';
+            } else {
+                statusBadge.textContent = 'Đã đóng cửa';
+                statusBadge.className = 'status-badge status-closed';
+            }
+        }
+
+        // Initial status check
+        updateStoreStatus();
+
+        // Update status when time inputs change
+        document.getElementById('GioMoCua').addEventListener('change', updateStoreStatus);
+        document.getElementById('GioDongCua').addEventListener('change', updateStoreStatus);
+
+        // Add focus animation to inputs
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-5px)';
+                this.parentElement.style.transition = 'transform 0.3s ease';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Auto-hide success notification after 4 seconds
+        setTimeout(function() {
+            const notification = document.getElementById('successNotification');
+            if (notification) {
+                notification.style.display = 'none';
+            }
+        }, 4000);
+    </script>
+}

@@ -1,0 +1,237 @@
+﻿@model IEnumerable<DanhMuc>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+    <link href="~/css/Admin/DanhMuc/Index.css" rel="stylesheet" />
+    @{
+        string selectedAll = string.IsNullOrEmpty(ViewBag.Status?.ToString()) ? "selected" : "";
+        string selectedTrue = ViewBag.Status?.ToString() == "True" ? "selected" : "";
+        string selectedFalse = ViewBag.Status?.ToString() == "False" ? "selected" : "";
+    }
+        <div class="header">
+            <div class="welcome-section">
+                <h1 class="welcome-title">Quản lý Danh mục Món ăn</h1>
+                <p class="welcome-subtitle">Quản lý tất cả danh mục món ăn trong hệ thống của bạn</p>
+            </div>
+            
+            <div class="header-actions">
+
+            </div>
+        </div>
+        <div class="quick-stats">
+            <div class="stat-box">
+                <div class="stat-icon orange">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <div class="stat-value">@Model.Count()</div>
+                <div class="stat-label">Tổng số danh mục</div>
+            </div>
+            
+            <div class="stat-box">
+                <div class="stat-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">@Model.Count(d => d.IsActive)</div>
+                <div class="stat-label">Danh mục hoạt động</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon red">
+                    <i class="fas fa-circle-xmark"></i>
+                </div>
+                <div class="stat-value">@Model.Count(d => d.IsActive == false)</div>
+                <div class="stat-label">Danh mục không hoạt động</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon blue">
+                    <i class="fas fa-hamburger"></i>
+                </div>
+                <div class="stat-value">@Model.Sum(d => d.SanPham?.Count ?? 0)</div>
+                <div class="stat-label">Tổng số món ăn</div>
+            </div>
+        </div>
+        
+        <!-- Food Category Management -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-th-large"></i>
+                    Danh sách danh mục món ăn
+                </h2>
+                <a asp-action="Create" class="btn-add-category" style="text-decoration: none;">
+                    <i class="fas fa-plus"></i>
+                    Thêm danh mục mới
+                </a>
+            </div>
+            
+            <div class="card-body">
+                <form method="get" class="food-category-header">
+                    <div class="category-search">
+                        <input type="text" name="search" id="searchInput" placeholder="Tìm kiếm danh mục..." value="@ViewBag.Search" />
+                        <i class="fas fa-search"></i>
+                    </div>
+
+                    <select class="filter-select" id="statusFilter" name="status">
+                        @{
+                            var status = ViewBag.Status?.ToString();
+                        }
+                        @if (string.IsNullOrEmpty(status))
+                        {
+                            <option value="" selected>Tất cả trạng thái</option>
+                        }
+                        else
+                        {
+                            <option value="">Tất cả trạng thái</option>
+                        }
+                        @if (status == "True")
+                        {
+                            <option value="true" selected>Hoạt động</option>
+                        }
+                        else
+                        {
+                            <option value="true">Hoạt động</option>
+                        }
+                        @if (status == "False")
+                        {
+                            <option value="false" selected>Ẩn</option>
+                        }
+                        else
+                        {
+                            <option value="false">Ẩn</option>
+                        }
+                    </select>
+
+                    <select class="filter-select" name="storeId">
+                        @foreach (var store in ViewBag.CuaHangs)
+                        {
+                            var selected = ViewBag.StoreId?.ToString() == store.CuaHangId.ToString() ? "selected" : "";
+                            if (selected == "selected")
+                            {
+                                <option value="@store.CuaHangId" selected>@store.TenCuaHang</option>
+                            }
+                            else
+                            {
+                                <option value="@store.CuaHangId">@store.TenCuaHang</option>
+                            }
+                        }
+                    </select>
+
+                    <button type="submit" class="btn-add-category">Lọc</button>
+                </form>
+            </div>
+            
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="category-table">
+                        <thead>
+                            <tr>
+                                <th>Mã DM</th>
+                                <th>Hình ảnh</th>
+                                <th>Tên danh mục</th>
+                                <th>Thứ tự</th>
+                                <th>Cửa hàng</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.MaDanhMuc</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.HinhAnh))
+                                        {
+                                            <img src="~/images/Danhmuc/@item.HinhAnh" alt="@item.TenDanhMuc" class="category-img">
+                                        }
+                                        else
+                                        {
+                                            <img src="~/images/placeholder.png" alt="No image" class="category-img">
+                                        }
+                                    </td>
+                                    <td>@item.TenDanhMuc</td>
+                                    <td>@item.ThuTuHienThi</td>
+                                    <td>@item.CuaHang?.TenCuaHang</td>
+                                    <td>
+                                        <span class="status-badge @(item.IsActive ? "status-active" : "status-inactive")">
+                                            @(item.IsActive ? "Hoạt động" : "Ẩn")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="category-actions">
+                                            <a asp-action="Edit" asp-route-id="@item.MaDanhMuc" class="btn-edit" style="text-decoration: none;">
+                                                <i class="fas fa-edit"></i>
+                                                Sửa
+                                            </a>
+                                            <form asp-action="Delete" asp-route-id="@item.MaDanhMuc" method="post" class="d-inline delete-form">
+                                                <button type="button" class="btn-delete">
+                                                    <i class="fas fa-trash-alt"></i> Xóa
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const storeFilter = document.getElementById('storeFilter');
+        const rows = document.querySelectorAll('.category-table tbody tr');
+
+        function filterRows() {
+            const searchTerm = searchInput?.value.toLowerCase() || "";
+            const statusValue = statusFilter?.value || "";
+            const storeValue = storeFilter?.value || "";
+
+            rows.forEach(row => {
+                const name = row.cells[2].textContent.toLowerCase();
+                const status = row.cells[5].textContent.trim() === "Hoạt động" ? "true" : "false";
+                const storeId = row.cells[4].textContent.trim();
+
+                const nameMatch = name.includes(searchTerm);
+                const statusMatch = statusValue === "" || status === statusValue;
+                const storeMatch = storeValue === "" || storeId === storeValue;
+
+                row.style.display = (nameMatch && statusMatch && storeMatch) ? '' : 'none';
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterRows);
+        if (statusFilter) statusFilter.addEventListener('change', filterRows);
+        if (storeFilter) storeFilter.addEventListener('change', filterRows);
+
+        filterRows();
+
+        // SweetAlert2 cho nút xóa
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const form = this.closest('form');
+                const categoryName = this.closest('tr').cells[2].textContent.trim();
+
+                Swal.fire({
+                    title: 'Xác nhận xóa',
+                    text: `Bạn có chắc chắn muốn xóa danh mục "${categoryName}"?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>

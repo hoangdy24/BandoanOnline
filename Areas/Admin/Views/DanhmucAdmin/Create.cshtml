@@ -1,0 +1,85 @@
+@using QlW_BandoanOnline.Models.ViewModels
+@model DanhMucAdminViewModel
+@{
+    ViewData["Title"] = "Thêm danh mục";
+}
+<link href="~/css/Admin/DanhMuc/Form.css" rel="stylesheet" />
+
+<div class="form-container">
+    <h2 class="section-title">Thêm Danh Mục Mới</h2>
+
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        
+        <div class="form-group">
+            <label asp-for="TenDanhMuc" class="form-label">Tên Danh Mục</label>
+            <input asp-for="TenDanhMuc" class="form-control" placeholder="Nhập tên danh mục" />
+            <span asp-validation-for="TenDanhMuc" class="text-danger"></span>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="MoTa" class="form-label">Mô Tả</label>
+            <textarea asp-for="MoTa" class="form-control" placeholder="Nhập mô tả danh mục" rows="4"></textarea>
+            <span asp-validation-for="MoTa" class="text-danger"></span>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="HinhAnhFile" class="form-label">Hình Ảnh Danh Mục</label>
+            <div class="image-upload-container">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h4 class="image-upload-title">Kéo thả hoặc chọn hình ảnh</h4>
+                <p class="image-upload-subtitle">Hỗ trợ định dạng JPG, PNG, GIF (tối đa 2MB)</p>
+                <input asp-for="HinhAnhFile" type="file" class="image-upload-input" id="image-upload" accept="image/*" />
+                <input type="hidden" id="HinhAnh" name="HinhAnh" value="" />
+            </div>
+            <div class="image-preview" id="image-preview" style="display: none;">
+                <img src="" id="preview-img" alt="Preview" />
+                <button type="button" class="image-preview-remove" id="remove-image">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <span asp-validation-for="HinhAnhFile" class="text-danger"></span>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="ThuTuHienThi" class="form-label">Thứ Tự Hiển Thị</label>
+            <input asp-for="ThuTuHienThi" class="form-control" type="number" min="1" placeholder="Nhập thứ tự hiển thị" />
+            <span asp-validation-for="ThuTuHienThi" class="text-danger"></span>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="CuaHangId" class="form-label">Cửa Hàng</label>
+            <select asp-for="CuaHangId" class="form-control filter-select" asp-items="ViewBag.CuaHangs">
+                <option value="">-- Chọn cửa hàng --</option>
+            </select>
+            <span asp-validation-for="CuaHangId" class="text-danger"></span>
+        </div>
+        
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label asp-for="IsActive" class="form-check-label">Kích hoạt</label>
+        </div>
+        
+        <div class="form-buttons">
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-save"></i> Lưu Danh Mục
+            </button>
+            <a href="javascript:history.back()" class="btn-cancel" style="text-decoration: none;">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="~/js/admin/themdm.js"></script>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Initialize image upload preview functionality from your JS
+        document.addEventListener('DOMContentLoaded', function() {
+            initImageUploadPreview();
+        });
+    </script>
+}

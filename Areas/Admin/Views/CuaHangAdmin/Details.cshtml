@@ -1,0 +1,247 @@
+﻿@model QlW_BandoanOnline.Models.CuaHang
+@{
+    ViewData["Title"] = "Chi tiết cửa hàng";
+    var currentTime = DateTime.Now.TimeOfDay;
+    var isOpen = currentTime >= Model.GioMoCua && currentTime <= Model.GioDongCua;
+}
+<link href="~/css/Admin/CuaHang/Details.css" rel="stylesheet" />
+<div class="container store-details-container">
+    <!-- Breadcrumb và header -->
+    <div class="page-header animate__animated animate__fadeIn">
+        <h1 class="page-title">
+            <i class="fas fa-store"></i>
+            @ViewData["Title"]
+        </h1>
+        <div class="breadcrumb">
+            <div class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index" style="color: #ff6b35">Trang chủ</a></div>
+            <div class="breadcrumb-item"><a asp-action="Index" style="color: #ff6b35">Cửa hàng</a></div>
+            <div class="breadcrumb-item active">@Model.TenCuaHang</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card info-card animate__animated animate__fadeInLeft">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-info-circle pulse" style="color: white;"></i>
+                        Thông tin cơ bản
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-item reveal">
+                                <label>Tên cửa hàng:</label>
+                                <p>@Model.TenCuaHang</p>
+                            </div>
+                            <div class="detail-item reveal">
+                                <label>Địa chỉ:</label>
+                                <p>@Model.DiaChi</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item reveal">
+                                <label>Số điện thoại:</label>
+                                <p>@Model.SoDienThoai</p>
+                            </div>
+                            <div class="detail-item reveal">
+                                <label>Giờ hoạt động:</label>
+                                <p>@Model.GioMoCua.ToString(@"hh\:mm") - @Model.GioDongCua.ToString(@"hh\:mm")</p>
+                            </div>
+                            <div class="detail-item reveal">
+                                <label>Trạng thái:</label>
+                                <p>
+                                    @if (isOpen)
+                                    {
+                                        <span class="badge badge-success status-badge" style="color: white">
+                                            <i class="fas fa-circle blink"></i> Đang mở cửa
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger status-badge" style="color: white">
+                                            <i class="fas fa-circle"></i> Đang đóng cửa
+                                        </span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách nhân viên -->
+            <div class="card staff-card mt-4 animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-users" style="color: white;"></i>
+                        Nhân viên (@Model.NhanVien?.Count)
+                    </div>
+                    <div class="card-tools">
+                        <button class="btn btn-tool" id="toggleStaff">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="staffContent">
+                    @if (Model.NhanVien?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tên nhân viên</th>
+                                        <th>Vị trí</th>
+                                        <th>SĐT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var nv in Model.NhanVien)
+                                    {
+                                        <tr class="staff-row">
+                                            <td>@nv.HoTen</td>
+                                            <td>@nv.ChucVu</td>
+                                            <td>@nv.SoDienThoai</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">Chưa có nhân viên nào</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card stats-card mt-4 animate__animated animate__fadeInRight animate__delay-1s">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-chart-pie" style="color: white;"></i>
+                        Thống kê
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="stats-item" data-count="@Model.NhanVien?.Count">
+                        <i class="fas fa-users"></i>
+                        <span class="counter" style="padding-right: 5px;">0</span>
+                        <span> nhân viên</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions mt-4 animate__animated animate__fadeInUp animate__delay-2s">
+        <a asp-action="Edit" asp-route-id="@Model.CuaHangId" class="btn btn-primary btn-action" style="text-decoration: none;color: ghostwhite">
+            <i class="fas fa-edit"></i> Chỉnh sửa
+        </a>
+        <a asp-action="Index" class="btn btn-secondary btn-action" style="text-decoration: none;color: ghostwhite">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<style>
+ 
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleStaffBtn = document.getElementById('toggleStaff');
+            const staffContent = document.getElementById('staffContent');
+            if (toggleStaffBtn && staffContent) {
+                toggleStaffBtn.addEventListener('click', function() {
+                    if (staffContent.style.display === 'none') {
+                        staffContent.style.display = 'block';
+                        toggleStaffBtn.querySelector('i').classList.remove('fa-chevron-up');
+                        toggleStaffBtn.querySelector('i').classList.add('fa-chevron-down');
+                    } else {
+                        staffContent.style.display = 'none';
+                        toggleStaffBtn.querySelector('i').classList.remove('fa-chevron-down');
+                        toggleStaffBtn.querySelector('i').classList.add('fa-chevron-up');
+                    }
+                });
+            }
+
+            // Animation khi cuộn trang
+            function revealOnScroll() {
+                const reveals = document.querySelectorAll('.reveal');
+                for (let i = 0; i < reveals.length; i++) {
+                    const windowHeight = window.innerHeight;
+                    const elementTop = reveals[i].getBoundingClientRect().top;
+                    const elementVisible = 150;
+
+                    if (elementTop < windowHeight - elementVisible) {
+                        reveals[i].classList.add('active');
+                    } else {
+                        reveals[i].classList.remove('active');
+                    }
+                }
+            }
+
+            window.addEventListener('scroll', revealOnScroll);
+            revealOnScroll(); // Kích hoạt ngay khi tải trang
+
+            // Counter animation
+            function startCounters() {
+                const counters = document.querySelectorAll('.counter');
+                const speed = 200;
+
+                counters.forEach(counter => {
+                    const parent = counter.closest('.stats-item');
+                    const target = parseInt(parent.getAttribute('data-count'));
+                    let count = 0;
+
+                    const updateCount = () => {
+                        if (count < target) {
+                            count++;
+                            counter.innerText = count;
+                            setTimeout(updateCount, speed / target);
+                        } else {
+                            counter.innerText = target;
+                        }
+                    };
+
+                    updateCount();
+                });
+            }
+
+            setTimeout(startCounters, 1000);
+
+            const categoryItems = document.querySelectorAll('.category-item');
+            categoryItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.borderLeft = '4px solid #43cea2';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.borderLeft = '';
+                });
+            });
+
+            // Thêm hiệu ứng ripple cho các nút
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    let x = e.clientX - this.getBoundingClientRect().left;
+                    let y = e.clientY - this.getBoundingClientRect().top;
+
+                    let ripple = document.createElement('span');
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+        });
+    </script>
+}

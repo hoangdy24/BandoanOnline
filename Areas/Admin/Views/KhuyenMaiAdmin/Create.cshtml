@@ -1,0 +1,260 @@
+﻿@model QlW_BandoanOnline.Models.KhuyenMai
+<link href="~/css/Admin/KhuyenMai/KhuyenMaiAdmin.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Thêm mới khuyến mãi";
+}
+
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div style="padding: 0 25px;">
+            <h1><i class="fas fa-plus-circle"></i> Thêm Chương trình Khuyến Mãi</h1>
+            <p>Tạo mới chương trình khuyến mãi cho hệ thống Burger Bụi</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-plus-circle"></i> Tạo chương trình khuyến mãi mới</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-row">
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="fas fa-info-circle"></i> Thông tin cơ bản</h4>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-tag"></i> Tên khuyến mãi</label>
+                            <input asp-for="TenKhuyenMai" class="form-control" placeholder="Nhập tên chương trình khuyến mãi" />
+                            <span asp-validation-for="TenKhuyenMai" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-code"></i> Mã khuyến mãi</label>
+                            <input asp-for="MaKhuyenMaiCode" class="form-control" placeholder="VD: SUMMER2024" style="text-transform: uppercase;" />
+                            <span asp-validation-for="MaKhuyenMaiCode" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-align-left"></i> Mô tả</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="3" placeholder="Mô tả chi tiết về chương trình khuyến mãi"></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-percentage"></i> Loại giảm giá</label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" asp-for="LaPhanTram" value="true" checked>
+                                    <label>Giảm theo phần trăm (%)</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" asp-for="LaPhanTram" value="false">
+                                    <label>Giảm giá trực tiếp (VNĐ)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-dollar-sign"></i> Giá trị giảm</label>
+                            <div class="input-group">
+                                <input asp-for="GiaTriGiam" class="form-control" placeholder="Nhập giá trị" />
+                                <div class="input-group-append">%</div>
+                            </div>
+                            <span asp-validation-for="GiaTriGiam" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title"><i class="fas fa-cog"></i> Cài đặt nâng cao</h4>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-calendar-alt"></i> Ngày bắt đầu</label>
+                            <input asp-for="NgayBatDau" type="datetime-local" class="form-control" />
+                            <span asp-validation-for="NgayBatDau" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-calendar-times"></i> Ngày kết thúc</label>
+                            <input asp-for="NgayKetThuc" type="datetime-local" class="form-control" />
+                            <span asp-validation-for="NgayKetThuc" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-hashtag"></i> Số lượng sử dụng</label>
+                            <input asp-for="SoLuong" class="form-control" value="100" />
+                            <span asp-validation-for="SoLuong" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-hamburger"></i> Áp dụng cho sản phẩm</label>
+                            <select asp-for="MaSanPham" class="form-control">
+                                <option value="">-- Chọn sản phẩm (tùy chọn) --</option>
+                                @foreach (var item in ViewBag.SanPhams as List<SanPham>)
+                                {
+                                    <option value="@item.MaSanPham">@item.TenSanPham</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-list"></i> Áp dụng cho danh mục</label>
+                            <select asp-for="MaDanhMuc" class="form-control">
+                                <option value="">-- Chọn danh mục (tùy chọn) --</option>
+                                @foreach (var item in ViewBag.DanhMucs as List<DanhMuc>)
+                                {
+                                    <option value="@item.MaDanhMuc">@item.TenDanhMuc</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-image"></i> Hình ảnh khuyến mãi</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="hinhAnhFile" name="hinhAnhFile" accept="image/*" class="file-upload-input">
+                                <label for="hinhAnhFile" class="file-upload-label">
+                                    <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                                    <span id="fileLabel">Chọn hình ảnh hoặc kéo thả vào đây</span>
+                                </label>
+                            </div>
+                            <span class="text-muted">(Tùy chọn - JPG, PNG tối đa 2MB)</span>
+
+                            <!-- Preview container -->
+                            <div class="image-preview-container">
+                                <img id="imagePreview" class="image-preview" alt="Preview hình ảnh">
+                                <button type="button" id="removeImageBtn" class="remove-image-btn">
+                                    <i class="fas fa-trash"></i> Xóa ảnh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--border); display: flex; gap: 15px; justify-content: center;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Tạo khuyến mãi
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Ẩn nút xóa ảnh ban đầu
+            $('#removeImageBtn').hide();
+            $('#imagePreview').hide();
+
+            // Xử lý hiển thị preview ảnh khi chọn file
+            $('#hinhAnhFile').on('change', function() {
+                const file = this.files[0];
+                const preview = $('#imagePreview');
+                const removeBtn = $('#removeImageBtn');
+                const fileLabel = $('#fileLabel');
+
+                if (file) {
+                    // Kiểm tra kích thước file (tối đa 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('File ảnh không được vượt quá 2MB');
+                        resetFileInput();
+                        return;
+                    }
+
+                    // Kiểm tra loại file
+                    if (!file.type.match('image.*')) {
+                        alert('Vui lòng chọn file ảnh (JPG, PNG)');
+                        resetFileInput();
+                        return;
+                    }
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        preview.attr('src', e.target.result);
+                        preview.show();
+                        removeBtn.show();
+                        fileLabel.text(file.name);
+                    }
+
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Xử lý nút xóa ảnh preview
+            $('#removeImageBtn').click(function() {
+                resetFileInput();
+            });
+
+            // Hàm reset file input
+            function resetFileInput() {
+                $('#hinhAnhFile').val('');
+                $('#imagePreview').attr('src', '').hide();
+                $('#removeImageBtn').hide();
+                $('#fileLabel').text('Chọn hình ảnh hoặc kéo thả vào đây');
+            }
+
+            // Kéo thả ảnh
+            const fileUploadLabel = $('.file-upload-label')[0];
+
+            fileUploadLabel.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                $(fileUploadLabel).addClass('dragover');
+            });
+
+            fileUploadLabel.addEventListener('dragleave', () => {
+                $(fileUploadLabel).removeClass('dragover');
+            });
+
+            fileUploadLabel.addEventListener('drop', (e) => {
+                e.preventDefault();
+                $(fileUploadLabel).removeClass('dragover');
+
+                if (e.dataTransfer.files.length) {
+                    const file = e.dataTransfer.files[0];
+
+                    // Kiểm tra file trước khi hiển thị
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('File ảnh không được vượt quá 2MB');
+                        return;
+                    }
+
+                    if (!file.type.match('image.*')) {
+                        alert('Vui lòng chọn file ảnh (JPG, PNG)');
+                        return;
+                    }
+
+                    $('#hinhAnhFile')[0].files = e.dataTransfer.files;
+                    $('#hinhAnhFile').trigger('change');
+                }
+            });
+
+            // Thay đổi đơn vị hiển thị khi chọn loại giảm giá
+            $('input[name="LaPhanTram"]').change(function() {
+                var isPercent = $(this).val() === 'true';
+                $('.input-group-append').text(isPercent ? '%' : 'VNĐ');
+            });
+
+            // Đặt ngày mặc định
+            var now = new Date();
+            var nowStr = now.toISOString().slice(0, 16);
+            $('#NgayBatDau').val(nowStr);
+
+            // Đặt ngày kết thúc mặc định (7 ngày sau)
+            var endDate = new Date(now);
+            endDate.setDate(endDate.getDate() + 7);
+            var endStr = endDate.toISOString().slice(0, 16);
+            $('#NgayKetThuc').val(endStr);
+        });
+    </script>
+}

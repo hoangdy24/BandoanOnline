@@ -1,0 +1,178 @@
+﻿@model PagedList.Core.IPagedList<KhuyenMai>
+<link href="~/css/Admin/KhuyenMai/KhuyenMaiAdmin.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Quản lý khuyến mãi";
+}
+
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div style="padding: 0 25px;">
+            <h1><i class="fas fa-percent"></i> Quản lý Chương trình Khuyến Mãi</h1>
+            <p>Quản lý các chương trình khuyến mãi cho hệ thống Burger Bụi</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>@Model.TotalItemCount</h3>
+            <p>Tổng khuyến mãi</p>
+        </div>
+        <div class="stat-card" style="border-left-color: var(--success);">
+            <h3>@Model.Count(x => x.IsActive)</h3>
+            <p>Đang hoạt động</p>
+        </div>
+        <div class="stat-card" style="border-left-color: var(--warning);">
+            <h3>@Model.Count(x => x.NgayKetThuc < DateTime.Now.AddDays(7) && x.NgayKetThuc > DateTime.Now)</h3>
+            <p>Sắp hết hạn</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="search-filter-section">
+        <div class="search-container">
+            <form asp-action="Index" method="get" class="search-input">
+                <div class="input-group">
+                    <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm khuyến mãi..." value="@ViewBag.CurrentFilter">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search" style="color:white"></i></button>
+                    </div>
+                </div>
+            </form>
+            <div class="filter-buttons">
+                <a asp-action="Create" asp-controller="KhuyenMaiAdmin" class="btn btn-outline-primary">Thêm khuyến mãi</a>
+                <a asp-action="Index" asp-route-isActive="true" class="btn @(ViewBag.IsActive == true ? "btn-success" : "btn-outline-success")">Đang hoạt động</a>
+                <a asp-action="Index" asp-route-isActive="false" class="btn @(ViewBag.IsActive == false ? "btn-danger" : "btn-outline-danger")">Đã kết thúc</a>
+                <a asp-action="Index" class="btn btn-outline-primary">Tất cả</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-tag"></i> Tên khuyến mãi</th>
+                    <th><i class="fas fa-code"></i> Mã code</th>
+                    <th><i class="fas fa-percentage"></i> Giá trị</th>
+                    <th><i class="fas fa-calendar-start"></i> Bắt đầu</th>
+                    <th><i class="fas fa-calendar-end"></i> Kết thúc</th>
+                    <th><i class="fas fa-chart-bar"></i> Sử dụng</th>
+                    <th><i class="fas fa-toggle-on"></i> Trạng thái</th>
+                    <th><i class="fas fa-cog"></i> Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.TenKhuyenMai</strong></td>
+                        <td><code>@item.MaKhuyenMaiCode</code></td>
+                        <td>
+                            <span class="value-display">
+                                @if (item.LaPhanTram)
+                                {
+                                    <i class="fas fa-percentage"></i> @item.GiaTriGiam;
+                                            }
+                                else
+                                {
+                                    <i class="fas fa-dollar-sign"></i> @item.GiaTriGiam.ToString("N0") <span>đ</span>;
+                                            }
+                            </span>
+                        </td>
+                        <td>@item.NgayBatDau.ToString("dd/MM/yyyy")</td>
+                        <td>@item.NgayKetThuc.ToString("dd/MM/yyyy")</td>
+                        <td>@item.DaSuDung/@item.SoLuong</td>
+                        <td>
+                            <span class="status-badge @(item.IsActive ? "status-active" : "status-inactive")">
+                                <i class="fas @(item.IsActive ? "fa-check-circle" : "fa-times-circle")"></i>
+                                @(item.IsActive ? "Hoạt động" : "Hết hạn")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a asp-action="Edit" asp-route-id="@item.MaKhuyenMai" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form id="deleteForm_@item.MaKhuyenMai" method="post" asp-action="Delete" asp-route-id="@item.MaKhuyenMai" onsubmit="return false;" style="display: inline;">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete('@item.MaKhuyenMai')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <nav>
+                <ul class="pagination">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, searchString = ViewBag.CurrentFilter, isActive = ViewBag.IsActive })">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                        </li>
+                    }
+
+                    @for (int i = 1; i <= Model.PageCount; i++)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = i, searchString = ViewBag.CurrentFilter, isActive = ViewBag.IsActive })">@i</a>
+                        </li>
+                    }
+
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, searchString = ViewBag.CurrentFilter, isActive = ViewBag.IsActive })">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script charset="UTF-8">
+        function confirmDelete(maKhuyenMai) {
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa khuyến mãi này không?',
+                text: "Khuyến mãi này sẽ bị xóa và không thể khôi phục!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Vâng, xóa!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('deleteForm_' + maKhuyenMai).submit();
+                }
+            });
+        }
+    </script>
+
+
+}

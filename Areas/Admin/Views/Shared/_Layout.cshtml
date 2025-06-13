@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/Admin/TemplateAdmin.css">
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <style>
+        .toast-top-right {
+            z-index: 9999 !important;
+        }
+    </style>
+    @using Microsoft.AspNetCore.Identity
+    @inject UserManager<ApplicationUser> UserManager
+
+    @{
+        var user = await UserManager.GetUserAsync(User);
+    }
+    <div class="sidebar" id="sidebar">
+        <div class="logo-container">
+            <div class="logo">
+                <i class="fas fa-utensils" style="padding-right: 5px;"></i>
+                <div class="logo-text">BCTECH ADMIN</div>
+            </div>
+            <button class="toggle-btn" id="toggle-sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="admin-info">
+            <div class="admin-avatar">🧑‍💻</div>
+            <div class="admin-details">
+                <div class="admin-name">@user.HoTen</div>
+                <div class="admin-role">Quản trị viên</div>
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="menu-header">TỔNG QUAN</li>
+            <li><a class="active" asp-action="Index" asp-controller="Home"><i class="fas fa-tachometer-alt"></i><span class="menu-text">Dashboard</span></a></li>
+
+            <li class="menu-header">QUẢN LÝ</li>
+            <!-- Dropdown cho Sản phẩm -->
+            <li class="has-dropdown">
+                <a href="#"><i class="fas fa-hamburger"></i><span class="menu-text">Sản phẩm</span></a>
+                <ul class="dropdown-menu">
+                    <li><a asp-action="Index" asp-controller="SanphamAdmin"><i class="fas fa-list"></i><span class="menu-text">Danh sách sản phẩm</span></a></li>
+                    <li><a asp-action="Index" asp-controller="DanhMucAdmin"><i class="fas fa-tags"></i><span class="menu-text">Danh mục</span></a></li>
+                    <li><a asp-action="Index" asp-controller="KhuyenMaiAdmin"><i class="fas fa-percent"></i><span class="menu-text">Khuyến mãi</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Dropdown cho Cửa hàng -->
+            <li class="has-dropdown">
+                <a href="#"><i class="fas fa-store"></i><span class="menu-text">Cửa hàng</span></a>
+                <ul class="dropdown-menu">
+                    <li><a asp-action="Index" asp-controller="CuaHangAdmin"><i class="fas fa-list"></i><span class="menu-text">Danh sách cửa hàng</span></a></li>
+                    <li><a asp-action="Create" asp-controller="CuaHangAdmin"><i class="fas fa-plus-circle"></i><span class="menu-text">Thêm cửa hàng</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Dropdown cho Nhân viên -->
+            <li class="has-dropdown">
+                <a href="#"><i class="fas fa-user-tie"></i><span class="menu-text">Nhân viên</span></a>
+                <ul class="dropdown-menu">
+                    <li><a asp-action="Index" asp-controller="NhanVienAdmin"><i class="fas fa-list"></i><span class="menu-text">Danh sách nhân viên</span></a></li>
+                    <li><a asp-action="Create" asp-controller="NhanVienAdmin"><i class="fas fa-user-plus"></i><span class="menu-text">Thêm nhân viên</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Dropdown cho Đơn hàng -->
+            <li class="has-dropdown">
+                <a href="#"><i class="fas fa-shopping-cart"></i><span class="menu-text">Đơn hàng</span></a>
+                <ul class="dropdown-menu">
+                    <li><a href="@Url.Action("Index", "DonHangAdmin")"><i class="fas fa-list"></i><span class="menu-text">Tất cả đơn hàng</span></a></li>
+                    <li><a href="@Url.Action("DangXuLy", "DonHangAdmin")"><i class="fas fa-hourglass-half"></i><span class="menu-text">Đơn hàng đang xử lý</span></a></li>
+                    <li><a href="@Url.Action("DangGiao", "DonHangAdmin")"><i class="fas fa-truck"></i><span class="menu-text">Đơn hàng đang giao</span></a></li>
+                    <li><a href="@Url.Action("HoanThanh", "DonHangAdmin")"><i class="fas fa-check-circle"></i><span class="menu-text">Đơn hàng hoàn thành</span></a></li>
+                    <li><a href="@Url.Action("DaHuy", "DonHangAdmin")"><i class="fas fa-times-circle"></i><span class="menu-text">Đơn hàng hủy</span></a></li>
+                </ul>
+            </li>
+
+            <li><a asp-area="Admin" asp-controller="KhachHangAdmin" asp-action="Customers"><i class="fas fa-users"></i><span class="menu-text">Khách hàng</span></a></li>
+
+            <li class="menu-header">HỆ THỐNG</li>
+            <li class="menu-item-logout">
+                <a href="#" id="logoutLink">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="menu-text">Đăng xuất</span>
+                </a>
+                <form asp-area="" asp-controller="Taikhoan" asp-action="Dangxuat" method="post" id="logoutForm" class="d-none">
+                    @Html.AntiForgeryToken()
+                </form>
+            </li>
+        </ul>
+    </div>
+    <div class="main-content" id="main-content">
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="toast-top-right">
+        
+        </div>
+
+        @RenderBody()
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/admin.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Xử lý logout bằng SweetAlert2
+            $('#logoutLink').click(function (e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Đăng xuất?',
+                    text: "Bạn có chắc chắn muốn đăng xuất?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Đăng xuất',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#logoutForm').submit();
+                    }
+                });
+            });
+
+            // Cấu hình toastr
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Hiển thị toastr nếu có TempData
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>toastr.success("@TempData["SuccessMessage"]");</text>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>toastr.error("@TempData["ErrorMessage"]");</text>
+        }
+
+        @if (TempData["WarningMessage"] != null)
+        {
+            <text>toastr.warning("@TempData["WarningMessage"]");</text>
+        }
+
+        @if (TempData["InfoMessage"] != null)
+        {
+            <text>toastr.info("@TempData["InfoMessage"]");</text>
+        }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <style>
+        center {
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            text-align: left;
+            width: auto;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+        }
+
+            center a {
+                color: #888;
+                text-decoration: none;
+            }
+    </style>
+</body>
+</html>

@@ -1,0 +1,207 @@
+﻿@model IEnumerable<QlW_BandoanOnline.Areas.Admin.Models.ViewModels.CuaHangViewModel>
+@{
+    ViewData["Title"] = "Quản lý cửa hàng";
+}
+<link href="~/css/Admin/CuaHang/CuaHang.css" rel="stylesheet" />
+    @using Microsoft.AspNetCore.Identity
+    @inject UserManager<ApplicationUser> UserManager
+@{
+    var user = await UserManager.GetUserAsync(User);
+}
+    <div class="header">
+        <div class="welcome-section">
+            <h1 class="welcome-title">Quản Lý Cửa Hàng</h1>
+            <p class="welcome-subtitle">Quản lý thông tin và trạng thái các cửa hàng trong hệ thống</p>
+        </div>
+        <div class="header-actions">
+            <form asp-action="Index" method="get" class="search-expand" id="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" name="searchString" placeholder="Tìm kiếm cửa hàng..." value="@ViewData["CurrentFilter"]">
+            </form>
+            <div class="dropdown">
+                <button class="header-btn" id="filter-btn">
+                    <i class="fas fa-filter"></i>
+                </button>
+                <div class="dropdown-content" id="filter-dropdown">
+                    <a href="@Url.Action("Index", new { filterType = "" })" class="dropdown-item"><i class="fas fa-check-circle"></i>Tất cả cửa hàng</a>
+                    <a href="@Url.Action("Index", new { filterType = "open" })" class="dropdown-item"><i class="fas fa-door-open"></i>Đang mở cửa</a>
+                    <a href="@Url.Action("Index", new { filterType = "closed" })" class="dropdown-item"><i class="fas fa-door-closed"></i>Đang đóng cửa</a>
+                    <a href="@Url.Action("Index", new { filterType = "name" })" class="dropdown-item"><i class="fas fa-sort-alpha-down"></i>Sắp xếp theo tên</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card orange">
+            <div class="stat-icon orange">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="stat-info">
+            <h3>@ViewBag.TongCuaHang</h3>
+            <p>
+                Tổng số cửa hàng
+            </p>
+            </div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon green">
+                <i class="fas fa-door-open"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@ViewBag.CuaHangDangMo</h3>
+                <p>Cửa hàng đang mở</p>
+            </div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-icon blue">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@ViewBag.TongNhanVien</h3>
+                <p>Tổng nhân viên</p>
+            </div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon purple">
+                <i class="fas fa-utensils"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@ViewBag.TongDonHang</h3>
+                <p>Tổng số đơn hàng</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="store-grid">
+        @foreach (var item in Model)
+        {
+            <div class="store-card">
+                <div class="store-image">
+                    <i class="fas @(item.DangMoCua ? "fa-store" : "fa-store-slash") store-icon"></i>
+                    <div class="store-status @(item.DangMoCua ? "status-open" : "status-closed")">
+                        @(item.DangMoCua ? "Đang mở cửa" : "Đang đóng cửa")
+                    </div>
+                </div>
+                <div class="store-content">
+                    <h3 class="store-title">@item.TenCuaHang</h3>
+                    <div class="store-info">
+                        <div class="store-detail">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>@item.DiaChi</span>
+                        </div>
+                        <div class="store-detail">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>@item.SoDienThoai</span>
+                        </div>
+                        <div class="store-detail">
+                            <i class="fas fa-clock"></i>
+                            <span>@item.GioMoCua.ToString(@"hh\:mm") - @item.GioDongCua.ToString(@"hh\:mm")</span>
+                        </div>
+                    </div>
+                    <div class="store-actions">
+                    <a asp-action="Details" asp-route-CuaHangId="@item.CuaHangId" class="store-btn btn-details" style="text-decoration: none;color: var(--primary-color)">
+                            <i class="fas fa-info-circle"></i> Chi tiết
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@item.CuaHangId" class="store-btn btn-edit" style="text-decoration: none">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                    <form asp-action="Delete" asp-route-id="@item.CuaHangId" method="post" class="d-inline delete-form">
+                        <button type="submit" class="store-btn btn-delete" style="width: 80px;">
+                            <i class="fas fa-trash-alt"></i> Xóa
+                        </button>
+                    </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Add new store button -->
+    <a asp-action="Create" class="fab" id="add-store-btn" style="text-decoration: none;">
+        <i class="fas fa-plus"></i>
+    </a>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Toggle dropdown menu khi click nút filter
+            const filterBtn = document.getElementById('filter-btn');
+            const filterDropdown = document.getElementById('filter-dropdown');
+
+            filterBtn.addEventListener('click', function () {
+                filterDropdown.classList.toggle('show');
+            });
+
+            // Đóng dropdown khi click ngoài
+            window.addEventListener('click', function (event) {
+                if (!event.target.matches('#filter-btn') && !event.target.closest('#filter-btn')) {
+                    const dropdowns = document.getElementsByClassName('dropdown-content');
+                    Array.from(dropdowns).forEach(dropdown => {
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                        }
+                    });
+                }
+            });
+
+            // Search box expand animation khi click icon tìm kiếm
+            const searchIcon = document.querySelector('.search-icon');
+            const searchBox = document.getElementById('search-box');
+            const searchInput = document.querySelector('.search-expand input');
+
+            searchIcon.addEventListener('click', function () {
+                searchBox.classList.add('active');
+                searchInput.focus();
+            });
+
+            // Thu nhỏ search box khi input mất focus mà không có giá trị
+            searchInput.addEventListener('blur', function () {
+                if (this.value.trim() === '') {
+                    searchBox.classList.remove('active');
+                }
+            });
+
+            // Xử lý Enter trong ô tìm kiếm
+            searchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.closest('form').submit();
+                }
+            });
+
+            // Hiệu ứng hover cho các store card
+            const storeCards = document.querySelectorAll('.store-card');
+            storeCards.forEach(card => {
+                card.addEventListener('mouseenter', () => card.classList.add('hover'));
+                card.addEventListener('mouseleave', () => card.classList.remove('hover'));
+            });
+
+            // Hiệu ứng khi trang load xong cho stat cards và store cards
+            const statCards = document.querySelectorAll('.stat-card');
+
+            statCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('animate__animated', 'animate__fadeInUp');
+                    card.style.opacity = '1';
+                }, index * 100);
+            });
+
+            storeCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('animate__animated', 'animate__fadeInUp');
+                    card.style.opacity = '1';
+                }, 400 + index * 150);
+            });
+
+            // Hiệu ứng nút thêm mới cửa hàng
+            const addStoreBtn = document.getElementById('add-store-btn');
+            if (addStoreBtn) {
+                setTimeout(() => {
+                    addStoreBtn.classList.add('animate__animated', 'animate__bounceIn');
+                    addStoreBtn.style.opacity = '1';
+                }, 1200);
+            }
+        });
+    </script>
+}

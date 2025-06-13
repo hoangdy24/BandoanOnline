@@ -1,0 +1,450 @@
+﻿@model QlW_BandoanOnline.Areas.Admin.Models.ViewModels.SanPhamAdminViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Quản lý món ăn";
+}
+<link href="~/css/Admin/SanPham/Index.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap5.min.css">
+        <div class="header">
+            <div class="welcome-section">
+                <h1 class="welcome-title">@ViewData["Title"]</h1>
+                <p class="welcome-subtitle">Quản lý thông tin sản phẩm, tùy chọn và chi tiết tùy chọn</p>
+            </div>
+        </div>
+            <input type="hidden" id="antiForgeryToken" value="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card orange">
+                <div class="stat-icon orange">
+                    <i class="fas fa-utensils" style="color: #f1f1f1;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.SanPhams.Count()</h3>
+                    <p>Tổng số sản phẩm </p>
+                </div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon green">
+                    <i class="fas fa-list-check" style="color: #f1f1f1;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.TuyChonSanPhams.Count()</h3>
+                    <p>Tùy chọn sản phẩm</p>
+                </div>
+            </div>
+            <div class="stat-card blue">
+                <div class="stat-icon blue">
+                    <i class="fas fa-pizza-slice" style="color: #f1f1f1;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.ChiTietTuyChons.Count()</h3>
+                    <p>Chi tiết tùy chọn</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-utensils"></i> Quản lý Sản phẩm & Tùy chọn</h2>
+            </div>
+            <div class="card-body p-0">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button">
+                            <i class="fas fa-hamburger me-1"></i> Sản phẩm (@Model.SanPhams.Count())
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="options-tab" data-bs-toggle="tab" data-bs-target="#options" type="button">
+                            <i class="fas fa-sliders me-1"></i> Tùy chọn (@Model.TuyChonSanPhams.Count())
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button">
+                            <i class="fas fa-list-ul me-1"></i> Chi tiết tùy chọn (@Model.ChiTietTuyChons.Count())
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content p-4" id="adminTabsContent">
+                    <!-- Products Tab -->
+                    <div class="tab-pane fade show active" id="products" role="tabpanel">
+                    <div class="mb-4">
+                        <a asp-action="Create" class="btn btn-primary" style="text-decoration: none;">
+                            <i class="fas fa-plus me-1"></i> Thêm sản phẩm
+                        </a>
+                        <button id="btnRefreshTables" class="btn btn-secondary">
+                                <i class="fas fa-refresh me-1"></i> Tải lại bảng
+                        </button>
+                    </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="productsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mã sản phẩm</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Hình ảnh</th>
+                                        <th>Danh mục</th>
+                                        <th>Giá bán</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.SanPhams)
+                                    {
+                                        <tr data-product-id="@item.MaSanPham">
+                                            <td>@item.MaSanPham</td>
+                                            <td>@item.TenSanPham</td>
+                                            <td><img src="~/images/Menu/@item.HinhAnh" alt="@item.TenSanPham" style="width: 60px;height: 60px;border-radius: 10px;object-fit: cover;transition: all 0.3s ease;"></td>
+                                            <td>@item.DanhMuc?.TenDanhMuc</td>
+                                            <td>@item.GiaBan.ToString("N0")</td>
+                                            <td>
+                                                <span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")" style="color: inherit;">
+                                                    @(item.IsActive ? "Hiển thị" : "Ẩn")
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="Edit" asp-route-id="@item.MaSanPham" data-id="@item.MaSanPham" class="btn btn-outline-primary edit-product" style="text-decoration: none;">
+                                                        <i class="fas fa-pencil-alt"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-info view-options" data-id="@item.MaSanPham" title="Xem tùy chọn">
+                                                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                                    </button>
+                                                    <a asp-action="CreateTuyChon" asp-controller="SanPhamAdmin" asp-route-maSanPham="@item.MaSanPham" class="btn btn-outline-success view-options" style="text-decoration:none;">
+                                                        <i class="fas fa-plus-circle"></i>
+                                                    </a>
+                                                    <a href="#" class="delete-product btn btn-outline-danger" data-id="@item.MaSanPham">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Options Tab -->
+                    <div class="tab-pane fade" id="options" role="tabpanel">
+                        <div class="mb-4">
+                            <button id="btnRefreshTables1" class="btn btn-secondary">
+                                <i class="fas fa-refresh me-1"></i> Tải lại bảng
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="optionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mã sản phẩm</th>
+                                        <th>Mã tùy chọn</th>
+                                        <th>Tên tùy chọn</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Bắt buộc</th>
+                                        <th>Số lượng chọn</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.TuyChonSanPhams)
+                                    {
+                                        <tr data-option-id="@item.MaTuyChon" data-product-id="@item.MaSanPham">
+                                            <td>@item.MaSanPham</td>
+                                            <td>@item.MaTuyChon</td>
+                                            <td>@item.TenTuyChon</td>
+                                            <td>@item.SanPham?.TenSanPham</td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input required-switch" type="checkbox"
+                                                    @(item.BatBuoc ? "checked" : "")
+                                                           data-id="@item.MaTuyChon" disabled>
+                                                </div>
+                                            </td>
+                                            <td>@item.SoLuongChonToiThieu - @item.SoLuongChonToiDa</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a class="btn btn-outline-primary edit-option" asp-action="EditTuyChon" asp-route-id="@item.MaTuyChon" style="text-decoration: none;">
+                                                        <i class="fas fa-pencil-alt"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-info add-detail" data-id="@item.MaTuyChon" title="Xem chi tiết">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </button>
+                                                    <a class="btn btn-outline-success add-detail" asp-action="CreateChiTiet" asp-controller="SanPhamAdmin" asp-route-optionId="@item.MaTuyChon" style="text-decoration: none">
+                                                        <i class="fas fa-plus-circle"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-danger delete-option" data-id="@item.MaTuyChon" data-name="@item.TenTuyChon" title="Xóa tùy chọn">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Option Details Tab -->
+                    <div class="tab-pane fade" id="details" role="tabpanel">
+                        <div class="mb-4">
+                            <button id="btnRefreshTables2" class="btn btn-secondary">
+                                <i class="fas fa-refresh me-1"></i> Tải lại bảng
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="detailsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mã tùy chọn</th>
+                                        <th>Mã chi tiết</th>
+                                        <th>Tên chi tiết</th>
+                                        <th>Tùy chọn</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Giá thêm</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.ChiTietTuyChons)
+                                    {
+                                        <tr data-detail-id="@item.MaChiTietTuyChon" data-option-id="@item.MaTuyChon">
+                                            <td>@item.MaTuyChon</td>
+                                            <td>@item.MaChiTietTuyChon</td>
+                                            <td>@item.TenChiTiet</td>
+                                            <td>@item.TuyChonSanPham?.TenTuyChon</td>
+                                            <td>@item.TuyChonSanPham?.SanPham?.TenSanPham</td>
+                                            <td>@item.GiaThem.ToString("N0")</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a class="btn btn-outline-primary edit-detail" asp-action="EditChiTiet" asp-controller="SanPhamAdmin" asp-route-id="@item.MaChiTietTuyChon" style="text-decoration: none;">
+                                                        <i class="fas fa-pencil-alt"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-danger delete-detail" data-id="@item.MaChiTietTuyChon">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap5.min.js"></script>
+        <script>
+        $(document).ready(function () {
+            // === 1. Khởi tạo DataTables ===
+        $(document).ready(function () {
+            const productsTable = $('#productsTable').DataTable({
+                responsive: true,
+                language: { url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/vi.json' },
+                order: [[0, 'asc']]
+            });
+            const optionsTable = $('#optionsTable').DataTable({
+                responsive: true,
+                language: { url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/vi.json' }
+                order: [[0, 'asc']]
+            });
+            const detailsTable = $('#detailsTable').DataTable({
+                responsive: true,
+                language: { url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/vi.json' }
+                order: [[0, 'asc']]
+            });
+
+            // === 2. Ghi nhớ và phục hồi tab đang chọn ===
+            $('#adminTabs button').click(function () {
+                $('#adminTabs button').removeClass('active');
+                $(this).addClass('active');
+                localStorage.setItem('lastActiveTab', $(this).attr('id'));
+            });
+            const lastActiveTab = localStorage.getItem('lastActiveTab');
+            if (lastActiveTab) {
+                $(`#${lastActiveTab}`).tab('show').addClass('active');
+            }
+
+            // === 3. Hàm xóa chung dùng POST ẩn ===
+            function postDelete(url, id, token) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                form.style.display = 'none';
+
+                const idInput = document.createElement('input');
+                idInput.name = 'id';
+                idInput.value = id;
+                form.appendChild(idInput);
+
+                const tokenInput = document.createElement('input');
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = token;
+                form.appendChild(tokenInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+        const antiForgeryToken = $('input[name="__RequestVerificationToken"]').val(); // Nếu dùng
+
+         // === 4. Xóa sản phẩm ===
+         $('.delete-product').click(function (e) {
+             e.preventDefault();
+             const id = $(this).data('id');
+             const url = '@Url.Action("Delete", "SanPhamAdmin", new { area = "Admin" })';
+
+             Swal.fire({
+                 title: 'Xác nhận xóa',
+                 text: "Bạn có chắc chắn muốn xóa sản phẩm này không?",
+                 icon: 'warning',
+                 showCancelButton: true,
+                 confirmButtonColor: '#d33',
+                 cancelButtonColor: '#3085d6',
+                 confirmButtonText: 'Xóa',
+                 cancelButtonText: 'Hủy'
+             }).then((result) => {
+                 if (result.isConfirmed) {
+                     postDelete(url, id, antiForgeryToken);
+                 }
+             });
+         });
+
+         // === 5. Xóa tùy chọn ===
+         $('.delete-option').click(function (e) {
+             e.preventDefault();
+             const optionId = $(this).data('id');
+             const optionName = $(this).data('name');
+             const url = '@Url.Action("DeleteTuyChon", "SanPhamAdmin")';
+
+             Swal.fire({
+                 title: 'Xác nhận xóa',
+                 text: `Bạn có chắc chắn muốn xóa tùy chọn "${optionName}"?`,
+                 icon: 'warning',
+                 showCancelButton: true,
+                 confirmButtonColor: '#d33',
+                 cancelButtonColor: '#3085d6',
+                 confirmButtonText: 'Xóa',
+                 cancelButtonText: 'Hủy'
+             }).then((result) => {
+                 if (result.isConfirmed) {
+                     postDelete(url, optionId, antiForgeryToken);
+                 }
+             });
+         });
+
+         // === 6. Xóa chi tiết tùy chọn ===
+         $(document).on('click', '.delete-detail', function () {
+             const id = $(this).data('id');
+             const url = '@Url.Action("DeleteChiTiet", "SanPhamAdmin")';
+
+             Swal.fire({
+                 title: 'Xác nhận xóa',
+                 text: 'Bạn có chắc chắn muốn xóa chi tiết tùy chọn này?',
+                 icon: 'warning',
+                 showCancelButton: true,
+                 confirmButtonColor: '#d33',
+                 cancelButtonColor: '#3085d6',
+                 confirmButtonText: 'Xóa',
+                 cancelButtonText: 'Hủy'
+             }).then((result) => {
+                 if (result.isConfirmed) {
+                     postDelete(url, id, antiForgeryToken);
+                 }
+             });
+         });
+
+            // === 7. Toggle "bắt buộc" tùy chọn sản phẩm ===
+            $('.required-switch').change(function () {
+                const optionId = $(this).data('id');
+                const isRequired = $(this).is(':checked');
+
+                $.post('/Admin/ToggleOptionRequired', {
+                    id: optionId,
+                    isRequired: isRequired
+                }, function (response) {
+                    if (!response.success) {
+                        alert('Cập nhật không thành công');
+                        $(this).prop('checked', !isRequired);
+                    }
+                });
+            });
+
+            // === 8. Chuyển tab sang Tùy chọn khi bấm "Xem tùy chọn" ===
+            $(document).on('click', '.view-options', function () {
+                // Lấy mã sản phẩm từ data-id của nút
+                const maSanPham = $(this).data('id');
+                
+                // Lấy hàng (tr) chứa nút này
+                const $row = $(this).closest('tr');
+                
+                // Lấy tên sản phẩm từ cột thứ 4 (index 3)
+                const productName = $row.find('td:eq(1)').text().trim();
+                
+                // Kiểm tra console log để debug
+                console.log('Mã SP:', maSanPham, 'Tên SP:', productName);
+
+                // Kích hoạt tab Tùy chọn
+                $('#adminTabs button').removeClass('active');
+                $('#options-tab').tab('show').addClass('active');
+
+                // Xóa bộ lọc trước đó và áp dụng bộ lọc mới
+                if (typeof optionsTable !== 'undefined') {
+                    optionsTable.search('').columns().search('').draw();
+                    optionsTable
+                        .column(0)
+                        .search('^' + maSanPham + '$', true, false) // tìm chính xác
+                        .draw();
+                }
+
+                // Hiển thị thông báo đang xem tùy chọn của sản phẩm nào
+                $('#optionsTable_wrapper .alert').remove();
+                $('#optionsTable_wrapper .dataTables_info').before(
+                    `<div class="alert alert-info mb-3">Đang xem tùy chọn của sản phẩm: <strong>${productName}</strong> (Mã: ${maSanPham})</div>`
+                );
+            });
+            // === 9. Chuyển tab sang Chi tiết khi bấm "Xem chi tiết" ===
+            $(document).on('click', '.add-detail', function () {
+                const optionId = $(this).data('id');
+                const optionName = $(this).closest('tr').find('td:eq(1)').text();
+
+                $('#details-tab').tab('show').addClass('active');
+                $('#adminTabs button').removeClass('active');
+                $('#details-tab').addClass('active');
+
+                detailsTable.search('').columns().search('').draw();
+                detailsTable.column(0).search(optionId).draw();
+
+                $('#detailsTable_wrapper .alert').remove();
+                $('#detailsTable_wrapper .dataTables_info').before(
+                    `<div class="alert alert-info mb-3">Đang xem chi tiết của tùy chọn: <strong>${optionName}</strong></div>`
+                );
+            });
+            
+            $('#btnRefreshTables').click(function () {
+                productsTable.search('').columns().search('').draw();
+                optionsTable.search('').columns().search('').draw();
+                detailsTable.search('').columns().search('').draw();;
+            });
+            $('#btnRefreshTables1').click(function () {
+                productsTable.search('').columns().search('').draw();
+                optionsTable.search('').columns().search('').draw();
+                detailsTable.search('').columns().search('').draw();
+            });
+            $('#btnRefreshTables2').click(function () {
+                productsTable.search('').columns().search('').draw();
+                optionsTable.search('').columns().search('').draw();
+                detailsTable.search('').columns().search('').draw();
+            });
+        });
+    </script>
+}

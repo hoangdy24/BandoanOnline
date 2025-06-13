@@ -1,0 +1,337 @@
+﻿@model DashboardViewModel
+@using Microsoft.AspNetCore.Identity
+@using QlW_BandoanOnline.Areas.Admin.Models.ViewModels
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Dashboard";
+    var user = await UserManager.GetUserAsync(User);
+}
+
+<link href="~/css/Admin/TemplateAdmin.css" rel="stylesheet" />
+
+<div class="header">
+    <div class="welcome-section">
+        <h1 class="welcome-title">Xin chào, @(user?.HoTen ?? "Admin")!</h1>
+        <p class="welcome-subtitle">Chào mừng bạn trở lại bảng điều khiển quản trị viên</p>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <!-- Giữ nguyên cấu trúc thẻ div như bản gốc -->
+    <div class="stat-card orange" style="animation-delay: 0.1s;">
+        <div class="stat-icon orange">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@Model.TotalOrders.ToString("N0")</h3>
+            <p>Tổng đơn hàng <span class="stat-change up"><i class="fas fa-arrow-up"></i>@Model.OrderChangePercent.ToString("N1")%</span></p>
+        </div>
+    </div>
+
+    <div class="stat-card green" style="animation-delay: 0.2s;">
+        <div class="stat-icon green">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@Model.TotalRevenue.ToString("N0") ₫</h3>
+            <p>Doanh thu <span class="stat-change up"><i class="fas fa-arrow-up"></i>@Model.RevenueChangePercent.ToString("N1")%</span></p>
+        </div>
+    </div>
+
+    <div class="stat-card blue" style="animation-delay: 0.3s;">
+        <div class="stat-icon blue">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@Model.TotalCustomers.ToString("N0")</h3>
+            <p>Khách hàng <span class="stat-change up"><i class="fas fa-arrow-up"></i>@Model.CustomerChangePercent.ToString("N1")%</span></p>
+        </div>
+    </div>
+
+    <div class="stat-card purple" style="animation-delay: 0.4s;">
+        <div class="stat-icon purple">
+            <i class="fas fa-hamburger"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@Model.TotalProducts.ToString("N0")</h3>
+            <p>Tổng sản phẩm <span class="stat-change down"><i class="fas fa-arrow-down"></i>@Math.Abs(Model.ProductChangePercent).ToString("N1")%</span></p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-content">
+    <!-- Phần bên trái -->
+    <div>
+        <!-- Card biểu đồ doanh thu -->
+        <div class="card" style="animation-delay: 0.5s;">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-chart-line"></i> Thống kê doanh thu
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card đơn hàng gần đây -->
+        <div class="card" style="animation-delay: 0.6s;">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-shopping-bag"></i> Đơn hàng gần đây
+                </div>
+                <a class="card-actions" asp-action="Index" asp-controller="DonHangAdmin" style="text-decoration: none;" asp-area="Admin">
+                    Xem tất cả <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class="card-body no-padding">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Giá trị</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td>#@order.MaDonHangPublic</td>
+                                    <td>
+                                        <div class="customer-cell">
+                                            <div class="customer-avatar">@GetInitials(order.User?.HoTen)</div>
+                                            <span>@(order.User?.HoTen ?? "Khách hàng")</span>
+                                        </div>
+                                    </td>
+                                    <td>@order.TongTienSauGiamGiaDB.ToString("N0") đ</td>
+                                    <td><span class="status @GetStatusClass(order.TrangThai)">@GetStatusName(order.TrangThai)</span></td>
+                                    <td>
+                                        <a asp-action="ChiTiet" asp-route-id="@order.MaDonHang" asp-controller="DonHangAdmin" asp-area="Admin" style="text-decoration: none;" class="action-btn"><i class="fas fa-eye"></i> Xem</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phần bên phải -->
+    <div>
+        <!-- Card hoạt động gần đây -->
+        <div class="card" style="animation-delay: 0.7s;">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-bell"></i> Hoạt động gần đây
+                </div>
+                <a asp-action="Index" asp-controller="HoatDong" class="card-actions" style="text-decoration: none;">
+                    Xem tất cả <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class="card-body no-padding">
+                @foreach (var activity in Model.RecentActivities)
+                {
+                    <div class="recent-activity-item">
+                        <div class="activity-icon" style="background: @activity.IconColor;">
+                            <i class="fas @activity.Icon"></i>
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title">@activity.Title</div>
+                            <div class="activity-time"><i class="far fa-clock"></i> @activity.TimeAgo</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Card mục tiêu kinh doanh -->
+        <div class="card" style="animation-delay: 0.8s;">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-tasks"></i> Mục tiêu kinh doanh
+                </div>
+                <a asp-action="Index" asp-controller="MucTieu" class="card-actions" style="text-decoration: none;">
+                    Cập nhật <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <div class="progress-label">Doanh thu tháng</div>
+                        <div class="progress-value">@Model.RevenueGoalProgress.ToString("0.#")%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar orange" style="width: @(Model.RevenueGoalProgress.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%;"></div>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <div class="progress-label">Khách hàng mới</div>
+                        <div class="progress-value">@Model.NewCustomerGoalProgress%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar green" style="width: @Model.NewCustomerGoalProgress%;"></div>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <div class="progress-label">Tổng đơn hàng</div>
+                        <div class="progress-value">@Model.OrderGoalProgress%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar blue" style="width: @Model.OrderGoalProgress%;"></div>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <div class="progress-label">Đánh giá tích cực</div>
+                        <div class="progress-value">@Model.PositiveReviewGoalProgress%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar purple" style="width: @Model.PositiveReviewGoalProgress%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card đánh giá gần đây -->
+        <div class="card" style="animation-delay: 0.9s;">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-star"></i> Đánh giá gần đây
+                </div>
+                <a asp-action="Index" asp-controller="DanhGia" class="card-actions" style="text-decoration: none;">
+                    Xem tất cả <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class="card-body no-padding">
+                @foreach (var review in Model.RecentReviews)
+                {
+                    <div class="review-item">
+                        <div class="reviewer-avatar">@GetInitials(review.User?.HoTen)</div>
+                        <div class="review-content">
+                            <div class="review-header">
+                                <div class="reviewer-name">@(review.User?.HoTen ?? "Khách hàng")</div>
+                                <div class="review-rating">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= review.Diem)
+                                        {
+                                            <i class="fas fa-star"></i>
+                                        }
+                                        else if (i - 0.5 <= review.Diem)
+                                        {
+                                            <i class="fas fa-star-half-alt"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star"></i>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="review-text">"@review.NoiDung"</div>
+                            <div class="review-date">@review.NgayDanhGia.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Revenue Chart
+        var ctx = document.getElementById('revenueChart').getContext('2d');
+        var revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+                datasets: [{
+                    label: 'Doanh thu 2025 (triệu đồng)',
+                    data: @Json.Serialize(Model.MonthlyRevenue),
+                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                    borderColor: '#ff6b35',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#ff6b35',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#6c757d'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#6c757d'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
+
+@functions {
+    private string GetInitials(string fullName)
+    {
+        if (string.IsNullOrEmpty(fullName))
+            return "KH";
+
+        var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "KH";
+        if (parts.Length == 1) return parts[0][0].ToString();
+
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+    }
+
+    private string GetStatusName(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => "Chờ xử lý",
+            TrangThaiDonHang.DaXacNhan => "Đã xác nhận",
+            TrangThaiDonHang.DangChuanBi => "Đang chuẩn bị",
+            TrangThaiDonHang.DangGiaoHang => "Đang giao",
+            TrangThaiDonHang.DaGiaoThanhCong => "Hoàn thành",
+            TrangThaiDonHang.DaHuy => "Hủy bỏ",
+            TrangThaiDonHang.HoanTien => "Hoàn tiền",
+            _ => status.ToString()
+        };
+    }
+
+    private string GetStatusClass(TrangThaiDonHang status)
+    {
+        return status switch
+        {
+            TrangThaiDonHang.ChoXacNhan => "pending",
+            TrangThaiDonHang.DaXacNhan => "preparing",
+            TrangThaiDonHang.DangChuanBi => "preparing",
+            TrangThaiDonHang.DangGiaoHang => "delivering",
+            TrangThaiDonHang.DaGiaoThanhCong => "completed",
+            TrangThaiDonHang.DaHuy => "failed",
+            TrangThaiDonHang.HoanTien => "failed",
+            _ => ""
+        };
+    }
+}

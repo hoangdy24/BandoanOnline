@@ -1,0 +1,54 @@
+﻿@using QlW_BandoanOnline.Areas.Admin.Models.ViewModels
+@model SuaKhachHangViewModel
+<link href="~/css/Admin/KhuyenMai/KhuyenMaiAdmin.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Chỉnh sửa thông tin khách hàng";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h3 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="EditCustomer" method="post">
+            <input type="hidden" asp-for="UserId" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="HoTen">Họ Tên</label>
+                        <input asp-for="HoTen" class="form-control" />
+                        <span asp-validation-for="HoTen" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="SoDienThoai">Số Điện Thoại</label>
+                        <input asp-for="SoDienThoai" class="form-control" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="DiaChi">Địa Chỉ</label>
+                        <input asp-for="DiaChi" class="form-control" />
+                        <span asp-validation-for="DiaChi" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-check">
+                <input asp-for="TrangThai" class="form-check-input" />
+                <label class="form-check-label" asp-for="TrangThai">Trạng Thái</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

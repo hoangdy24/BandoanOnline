@@ -1,0 +1,56 @@
+﻿@using QlW_BandoanOnline.Areas.Admin.Models.ViewModels
+@model ActivityListViewModel
+
+@{
+    ViewData["Title"] = "Hoạt Động Gần Đây";
+}
+
+<div class="header">
+    <div class="welcome-section">
+        <h1 class="welcome-title">Hoạt Động Gần Đây</h1>
+        <p class="welcome-subtitle">Lịch sử các hoạt động trong hệ thống</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fas fa-history"></i> Danh sách hoạt động
+        </div>
+    </div>
+    <div class="card-body no-padding">
+        @foreach (var activity in Model.Activities)
+        {
+            <div class="recent-activity-item">
+                <div class="activity-icon" style="background: @activity.IconColor;">
+                    <i class="fas @activity.Icon"></i>
+                </div>
+                <div class="activity-info">
+                    <div class="activity-title">@activity.Title</div>
+                    <div class="activity-time"><i class="far fa-clock"></i> @activity.TimeAgo</div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="card-footer">
+        <div class="pagination">
+            @if (Model.PagingInfo.CurrentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { page = Model.PagingInfo.CurrentPage - 1 })" class="page-link">
+                    <i class="fas fa-chevron-left"></i> Trang trước
+                </a>
+            }
+
+            <span class="page-info">
+                Trang @Model.PagingInfo.CurrentPage / @Model.PagingInfo.TotalPages
+            </span>
+
+            @if (Model.PagingInfo.CurrentPage < Model.PagingInfo.TotalPages)
+            {
+                <a href="@Url.Action("Index", new { page = Model.PagingInfo.CurrentPage + 1 })" class="page-link">
+                    Trang sau <i class="fas fa-chevron-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+</div>

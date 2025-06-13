@@ -1,0 +1,146 @@
+﻿@model IEnumerable<QlW_BandoanOnline.Models.DonHang>
+<link href="~/css/Admin/SanPham/Index.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Danh sách đơn hàng</h3>
+        <div class="header-actions">
+            <div class="btn-group">
+                <a asp-action="Index" class="btn btn-outline-primary" style="text-decoration: none;">Tất cả</a>
+                <a asp-action="VNPAY" class="btn btn-outline-info" style="text-decoration: none;">VNPAY</a>
+                <a asp-action="TienMat" class="btn btn-outline-success" style="text-decoration: none;">Tiền mặt</a>
+            </div>
+            <div class="search-container">
+                <input type="text" placeholder="Tìm kiếm đơn hàng...">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover" style="align-content: center">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày đặt</th>
+                        <th>Sản phẩm</th>
+                        <th>Tổng tiền</th>
+                        <th>Hình thức thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>#@item.MaDonHang</td>
+                            <td>@item.ThoiGianDatHang.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.ChiTietDonHang.Sum(ct => ct.SoLuong)</td>
+                            <td>@item.TongTien.ToString("N0") đ</td>
+                            <td style="text-align: center">
+                                @switch (item.PhuongThucThanhToan)
+                                {
+                                    case PhuongThucThanhToan.VNPay:
+                                        <span class="badge" style="background-color: #0072BC; color: #ffffff;">VNPAY</span>
+                                        break;
+                                    case PhuongThucThanhToan.TienMat:
+                                        <span class="badge" style="background-color: #2ecc71; color: #ffffff;">Tiền Mặt</span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                @switch (item.TrangThai)
+                                {
+                                    case TrangThaiDonHang.ChoXacNhan:
+                                        <span class="badge bg-warning">Chờ xác nhận</span>
+                                        break;
+                                    case TrangThaiDonHang.DaXacNhan:
+                                        <span class="badge bg-info">Đã xác nhận</span>
+                                        break;
+                                    case TrangThaiDonHang.DangChuanBi:
+                                        <span class="badge bg-info">Đang chuẩn bị</span>
+                                        break;
+                                    case TrangThaiDonHang.DangGiaoHang:
+                                        <span class="badge bg-primary">Đang giao</span>
+                                        break;
+                                    case TrangThaiDonHang.DaGiaoThanhCong:
+                                        <span class="badge bg-success">Hoàn thành</span>
+                                        break;
+                                    case TrangThaiDonHang.DaHuy:
+                                        <span class="badge bg-danger">Đã hủy</span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-action="ChiTiet" asp-route-id="@item.MaDonHang" style="text-decoration: none;"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="material-icons">visibility</i>
+                                    </a>
+                                    @if (item.CoTheHuy)
+                                    {
+                                        <form asp-action="HuyDonHang" method="post" class="d-inline" id="formHuyDonHang-@item.MaDonHang">
+                                            <input type="hidden" name="id" value="@item.MaDonHang" />
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-huy-donhang"
+                                                    data-id="@item.MaDonHang">
+                                                <i class="material-icons">cancel</i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer clearfix">
+        <div class="float-right">
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize tooltips
+        $(function () {
+            $('[title]').tooltip();
+        });
+
+        // Search functionality
+        $('.search-container input').on('keyup', function() {
+            const value = $(this).val().toLowerCase();
+            $('table tbody tr').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý sự kiện click nút hủy đơn hàng
+            document.querySelectorAll('.btn-huy-donhang').forEach(button => {
+                button.addEventListener('click', function() {
+                    const formId = 'formHuyDonHang-' + this.getAttribute('data-id');
+
+                    Swal.fire({
+                        title: 'Xác nhận hủy đơn hàng',
+                        text: "Bạn có chắc chắn muốn hủy đơn hàng này?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Đồng ý',
+                        cancelButtonText: 'Hủy bỏ'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById(formId).submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+}

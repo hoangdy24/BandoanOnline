@@ -1,0 +1,239 @@
+﻿@model IEnumerable<QlW_BandoanOnline.Models.NhanVien>
+@{
+    ViewData["Title"] = "Quản Lý Nhân Viên";
+}
+<link href="~/css/Admin/NhanVien/Index.css" rel="stylesheet" />
+    @using Microsoft.AspNetCore.Identity
+    @inject UserManager<ApplicationUser> UserManager
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+}
+    <div class="header">
+        <div class="welcome-section">
+            <h1 class="welcome-title">Quản Lý Nhân Viên</h1>
+            <p class="welcome-subtitle">Quản lý thông tin và phân công nhân viên nhà hàng</p>
+        </div>
+
+        <div class="header-actions">
+           
+        </div>
+    </div>
+
+    <div class="page-title">
+        <i class="fas fa-user-friends"></i> Danh sách nhân viên
+    </div>
+
+    <div class="action-buttons">
+        <a asp-action="Create" asp-controller="NhanVienAdmin" class="btn btn-primary" id="addEmployeeBtn" style="text-decoration: none;">
+            <i class="fas fa-plus"></i> Thêm nhân viên mới
+        </a>
+        <a asp-action="ExportToExcel" class="btn btn-outline" style="text-decoration: none;">
+            <i class="fas fa-file-export"></i> Xuất Excel
+        </a>
+        <a asp-action="ExportToPDF" class="btn btn-outline" style="text-decoration: none;">
+            <i class="fas fa-print"></i> Xuất PDF
+        </a>
+    </div>
+
+    <div class="filters-container">
+        <div class="filters-title">
+            <i class="fas fa-filter"></i> Lọc nhân viên
+        </div>
+
+        <form asp-action="Index" method="get" class="filters-form">
+            <div class="form-group">
+                <label for="filterPosition">Vị trí</label>
+                <select class="form-control" id="filterPosition" name="filterPosition">
+                    <option value="">Tất cả</option>
+                    <option value="đầu bếp" selected='@(ViewBag.FilterPosition == "đầu bếp")'>Đầu bếp</option>
+                    <option value="phục vụ" selected='@(ViewBag.FilterPosition == "phục vụ")'>Phục vụ</option>
+                    <option value="thu ngân" selected='@(ViewBag.FilterPosition == "thu ngân")'>Thu ngân</option>
+                    <option value="quản lý" selected='@(ViewBag.FilterPosition == "quản lý")'>Quản lý</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="filterStatus">Trạng thái</label>
+                <select class="form-control" id="filterStatus" name="filterStatus">
+                    <option value="">Tất cả</option>
+                    <option value="active" selected='@(ViewBag.FilterStatus == "active")'>Đang làm việc</option>
+                    <option value="inactive" selected='@(ViewBag.FilterStatus == "inactive")'>Đã nghỉ việc</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="filterDepartment">Bộ phận</label>
+                <select class="form-control" id="filterDepartment" name="filterDepartment">
+                    <option value="">Tất cả</option>
+                    <option value="bếp" selected='@(ViewBag.FilterDepartment == "bếp")'>Bếp</option>
+                    <option value="phòng ăn" selected='@(ViewBag.FilterDepartment == "phòng ăn")'>Phòng ăn</option>
+                    <option value="quầy bar" selected='@(ViewBag.FilterDepartment == "quầy bar")'>Quầy bar</option>
+                    <option value="văn phòng" selected='@(ViewBag.FilterDepartment == "văn phòng")'>Văn phòng</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="filterJoinDate">Ngày vào làm</label>
+                <input type="date" class="form-control" id="filterJoinDate" name="filterJoinDate" value="@ViewBag.FilterJoinDate">
+            </div>
+        <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">Lọc</button>
+                <a asp-action="Index" class="btn btn-outline" style="text-decoration: none;">Xóa bộ lọc</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="employees-table-container">
+        <div class="table-header">
+            <div class="table-title">
+                <i class="fas fa-list"></i> Danh sách nhân viên (@Model.Count())
+            </div>
+            <div class="table-actions">
+            <a asp-action="Index" class="btn btn-outline" style="text-decoration: none;">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="employees-table">
+                <thead>
+                    <tr>
+                        <th>Mã NV</th>
+                        <th>Nhân viên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Vị trí</th>
+                        <th>Ngày vào làm</th>
+                        <th>Trạng thái</th>
+                        <th width="100px">Thao tác</th>
+                        <th>Xoá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.MaNhanVien</td>
+                            <td class="employee-name-cell">
+                                <div class="employee-info">
+                                    <div class="employee-name">@item.HoTen</div>
+                                    <div class="employee-position">@item.ChucVu</div>
+                                </div>
+                            </td>
+                            <td>@item.Email</td>
+                            <td>@item.SoDienThoai</td>
+                            <td>@item.ChucVu</td>
+                            <td>@item.NgayBatDauLam.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (item.DangLamViec)
+                                {
+                                    <span class="status-badge status-active">Đang làm việc</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-inactive">Đã nghỉ việc</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.NhanVienId" class="table-action-btn view"><i class="fas fa-eye"></i></a>
+                                <a asp-action="Edit" asp-route-id="@item.NhanVienId" class="table-action-btn edit"><i class="fas fa-edit"></i></a>
+                            </td>
+                            <td>
+                            <form asp-action="Delete" asp-route-id="@item.NhanVienId" method="post" class="delete-form d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="button" class="table-action-btn delete-btn">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+            <!-- You can implement pagination here if needed -->
+        </div>
+    </div>
+
+@functions {
+    public string GetInitials(string fullName)
+    {
+        if (string.IsNullOrEmpty(fullName))
+            return "NV";
+
+        var names = fullName.Split(' ');
+        if (names.Length >= 2)
+        {
+            return $"{names[0][0]}{names[names.Length - 1][0]}".ToUpper();
+        }
+        return fullName.Length >= 2 ? fullName.Substring(0, 2).ToUpper() : fullName.ToUpper();
+    }
+}
+
+@section Scripts {
+    <script charset="UTF-8">
+     const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function (e) {
+                    if (e.key === 'Enter') {
+                        const searchTerm = this.value.trim();
+                        if (searchTerm) {
+                            window.location.href = '@Url.Action("Index")' + '?searchTerm=' + encodeURIComponent(searchTerm);
+                        }
+                    }
+                });
+            }
+        document.addEventListener('DOMContentLoaded', function () {
+                // Xử lý nút xóa
+                document.querySelectorAll('.delete-form').forEach(function (form) {
+                    const deleteBtn = form.querySelector('.delete-btn');
+
+                    deleteBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        Swal.fire({
+                            title: 'Xác nhận xóa',
+                            text: 'Bạn có chắc chắn muốn xóa nhân viên này?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Xóa',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    });
+                });
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: '@Html.Raw(TempData["SuccessMessage"])',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+            </text>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: '@TempData["ErrorMessage"]',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+            </text>
+        }
+            });
+    </script>
+}

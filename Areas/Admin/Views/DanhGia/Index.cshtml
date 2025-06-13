@@ -1,0 +1,115 @@
+﻿@using QlW_BandoanOnline.Areas.Admin.Models.ViewModels
+@model DanhGiaViewModel
+
+@{
+    ViewData["Title"] = "Đánh Giá Của Khách Hàng";
+}
+
+<div class="header">
+    <div class="welcome-section">
+        <h1 class="welcome-title">Đánh Giá Của Khách Hàng</h1>
+        <p class="welcome-subtitle">Tất cả đánh giá từ khách hàng</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fas fa-star"></i> Danh sách đánh giá
+        </div>
+        <div class="card-actions" style="text-decoration: none;">
+            <div class="rating-filter">
+                <span>Lọc theo điểm:</span>
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <a href="@Url.Action("Index", new { rating = i })" class="@(Model.FilterRating == i ? "active" : "")" style="text-decoration: none;color: inherit;">
+                        @i <i class="fas fa-star"></i>
+                    </a>
+                }
+                <a href="@Url.Action("Index")" class="@(!Model.FilterRating.HasValue ? "active" : "")" style="text-decoration: none;color: inherit;">
+                    Tất cả
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body no-padding">
+        @foreach (var review in Model.Reviews)
+        {
+            <div class="review-item">
+                <div class="reviewer-avatar">@GetInitials(review.User?.HoTen)</div>
+                <div class="review-content">
+                    <div class="review-header">
+                        <div class="reviewer-name">@(review.User?.HoTen ?? "Khách hàng")</div>
+                        <div class="review-rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= review.Diem)
+                                {
+                                    <i class="fas fa-star"></i>
+                                }
+                                else if (i - 0.5 <= review.Diem)
+                                {
+                                    <i class="fas fa-star-half-alt"></i>
+                                }
+                                else
+                                {
+                                    <i class="far fa-star"></i>
+                                }
+                            }
+                        </div>
+                        <div class="review-order">Đơn hàng: #@review.DonHang.MaDonHangPublic</div>
+                    </div>
+                    <div class="review-text">"@review.NoiDung"</div>
+                    <div class="review-date">@review.NgayDanhGia.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="card-footer">
+        <div class="pagination">
+            @if (Model.PagingInfo.CurrentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { page = Model.PagingInfo.CurrentPage - 1, rating = Model.FilterRating })" class="page-link">
+                    <i class="fas fa-chevron-left"></i> Trang trước
+                </a>
+            }
+
+            <span class="page-info">
+                Trang @Model.PagingInfo.CurrentPage / @Model.PagingInfo.TotalPages
+            </span>
+
+            @if (Model.PagingInfo.CurrentPage < Model.PagingInfo.TotalPages)
+            {
+                <a href="@Url.Action("Index", new { page = Model.PagingInfo.CurrentPage + 1, rating = Model.FilterRating })" class="page-link">
+                    Trang sau <i class="fas fa-chevron-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.response-btn').click(function() {
+                var reviewId = $(this).data('review-id');
+                $('#reviewId').val(reviewId);
+                $('#responseModal').modal('show');
+            });
+        });
+    </script>
+}
+
+@functions {
+    private string GetInitials(string fullName)
+    {
+        if (string.IsNullOrEmpty(fullName))
+            return "KH";
+
+        var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "KH";
+        if (parts.Length == 1) return parts[0][0].ToString();
+
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+    }
+}

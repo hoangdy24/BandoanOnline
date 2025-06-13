@@ -1,0 +1,462 @@
+﻿@model QlW_BandoanOnline.Models.DonHang
+<link href="~/css/Admin/DonHang/DonHangAdmin.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng " + Model.MaDonHangPublic;
+    var lichSu = ViewBag.LichSuDonHang as List<DonHangHistory>;
+}
+
+<div class="dashboard">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-receipt"></i>
+                @ViewData["Title"]
+            </h1>
+        </div>
+        <div>
+            <span class="status-badge @GetStatusBadgeClass(Model.TrangThai) pulse">
+                @GetStatusDisplayName(Model.TrangThai)
+            </span>
+            <a href="@Url.Action("Index")" class="back-button ml-3" style="text-decoration: none;color: black;">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="order-grid">
+        <!-- Left Column -->
+        <div>
+            <!-- Products Card -->
+            <div class="card">
+                <div class="card-header primary">
+                    <i class="fas fa-hamburger"></i>
+                    <h3 class="card-title">Thông tin sản phẩm</h3>
+                </div>
+                <div class="card-body">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá</th>
+                                <th>Số lượng</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ChiTietDonHang)
+                            {
+                                decimal tongGiaTuyChon = 0;
+                                var options = new List<dynamic>();
+
+                                if (!string.IsNullOrWhiteSpace(item.TuyChonThem))
+                                {
+                                    options = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(item.TuyChonThem.Replace("\n", " ").Trim());
+                                    tongGiaTuyChon = options.Sum(opt =>
+                                    {
+                                        decimal giaThem;
+                                        if (opt.GiaThem is int)
+                                        {
+                                            giaThem = Convert.ToDecimal((int)opt.GiaThem);
+                                        }
+                                        else
+                                        {
+                                            giaThem = Convert.ToDecimal(opt.GiaThem);
+                                        }
+                                        return giaThem;
+                                    });
+                                }
+
+                                <tr>
+                                    <td>
+                                        <div class="product-item">
+                                            <img src="~/images/Menu/@item.HinhAnh" alt="@item.TenSanPham" class="product-image">
+                                            <div class="product-info">
+                                                <h5>@item.TenSanPham</h5>
+                                                @if (options.Any())
+                                                {
+                                                    <div class="product-options">
+                                                        @foreach (var opt in options)
+                                                        {
+                                                            <div class="option-item">
+                                                                @if (opt.TenTuyChon != null)
+                                                                {
+                                                                    <span class="option-name">@opt.TenTuyChon</span><br />
+                                                                }
+                                                                @if (opt.GiaThem > 0)
+                                                                {
+                                                                    <span class="option-price">+@(opt.GiaThem.ToString("N0")) đ</span>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.GhiChu))
+                                                {
+                                                    <small>@item.GhiChu</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="price">@((item.DonGia + tongGiaTuyChon).ToString("N0")) VND</td>
+                                    <td><span class="quantity-badge">@item.SoLuong</span></td>
+                                    <td class="price">@(((item.DonGia + tongGiaTuyChon) * item.SoLuong).ToString("N0")) VND</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Order History Card -->
+            <div class="card">
+                <div class="card-header info">
+                    <i class="fas fa-history"></i>
+                    <h3 class="card-title">Lịch sử đơn hàng</h3>
+                </div>
+                <div class="card-body">
+                    @if (lichSu != null && lichSu.Any())
+                    {
+                        <div class="timeline">
+                            @foreach (var item in lichSu)
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-header">
+                                        <span class="timeline-status">@GetStatusDisplayName(item.TrangThai)</span>
+                                        <span class="timeline-time">@item.ThoiGianCapNhat.ToString("HH:mm - dd/MM/yyyy")</span>
+                                    </div>
+                                    <div class="timeline-note">
+                                        @if (item.NhanVien != null)
+                                        {
+                                            <span>(bởi @item.NhanVien.HoTen)</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.GhiChu))
+                                        {
+                                            <p>@item.GhiChu</p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light">
+                            <i class="fas fa-info-circle"></i> Chưa có lịch sử cập nhật
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+            <!-- Order Summary Card -->
+            <div class="card">
+                <div class="card-header success">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <h3 class="card-title">Thông tin đơn hàng</h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">Mã đơn hàng:</span>
+                        <span class="info-value">@Model.MaDonHangPublic</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ngày đặt:</span>
+                        <span class="info-value">@Model.ThoiGianDatHang.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phương thức thanh toán:</span>
+                        <span class="info-value">@GetPaymentMethodDisplayName(Model.PhuongThucThanhToan)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Thanh toán:</span>
+                        <span class="info-value @(Model.DaThanhToan ? "text-success" : "text-danger")">
+                            @(Model.DaThanhToan ? "Đã thanh toán" : "Chưa thanh toán")
+                        </span>
+                    </div>
+                    @if (Model.ThoiGianThanhToan.HasValue)
+                    {
+                        <div class="info-row">
+                            <span class="info-label">Thời gian thanh toán:</span>
+                            <span class="info-value">@Model.ThoiGianThanhToan.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                    }
+                    @if (Model.KhuyenMai != null)
+                    {
+                        <div class="info-row">
+                            <span class="info-label">Khuyến mãi:</span>
+                            <span class="info-value text-primary">@Model.KhuyenMai.TenKhuyenMai</span>
+                        </div>
+                    }
+                    <div class="info-row">
+                        <span class="info-label">Tổng tiền sản phẩm:</span>
+                        <span class="info-value">@Model.TongTienTruocGiamGiaDB.ToString("N0") VND</span>
+                    </div>
+                    @if (Model.GiamGia > 0)
+                    {
+                        <div class="info-row">
+                            <span class="info-label">Giảm giá:</span>
+                            <span class="info-value text-danger">-@Model.GiamGia.ToString("N0") VND</span>
+                        </div>
+                    }
+                    <div class="info-row">
+                        <span class="info-label">Phí giao hàng:</span>
+                        <span class="info-value">@Model.TienGiaoHang.ToString("N0") VND</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Tổng cộng:</span>
+                        <span class="info-value">@Model.TongTienSauGiamGiaDB.ToString("N0") VND</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Info Card -->
+            <div class="card">
+                <div class="card-header warning">
+                    <i class="fas fa-shipping-fast"></i>
+                    <h3 class="card-title">Thông tin giao hàng</h3>
+                </div>
+                <div class="card-body">
+                    <div class="delivery-info">
+                        <div class="delivery-row">
+                            <strong>Họ tên:</strong>
+                            <span>@Model.HoTenKhach</span>
+                        </div>
+                        <div class="delivery-row">
+                            <strong>Số điện thoại:</strong>
+                            <span>@Model.SoDienThoai</span>
+                        </div>
+                        <div class="delivery-row">
+                            <strong>Email:</strong>
+                            <span>@Model.Email</span>
+                        </div>
+                        <div class="delivery-row">
+                            <strong>Địa chỉ:</strong>
+                            <span>@Model.DiaChiGiaoHang</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.GhiChuDiaChi))
+                        {
+                            <div class="delivery-row">
+                                <strong>Ghi chú:</strong>
+                                <span>@Model.GhiChuDiaChi</span>
+                            </div>
+                        }
+                        @if (Model.ThoiGianGiaoDuKien.HasValue)
+                        {
+                            <div class="delivery-row">
+                                <strong>Dự kiến giao:</strong>
+                                <span>@Model.ThoiGianGiaoDuKien.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mt-3">
+                        @if (!string.IsNullOrEmpty(Model.NhanVienTiepNhanId))
+                        {
+                            <div class="delivery-row">
+                                <strong>NV xác nhận:</strong>
+                                <span>@Model.TenNhanVienTiepNhan</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.NhanVienGiaoHangId))
+                        {
+                            <div class="delivery-row">
+                                <strong>NV giao hàng:</strong>
+                                <span>@Model.TenNhanVienGiaoHang</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Card -->
+            @if (Model.CoTheHuy)
+            {
+                <div class="card">
+                    <div class="card-body text-center">
+                        <form asp-action="HuyDonHang" method="post" id="huyDonForm">
+                            <input type="hidden" name="id" value="@Model.MaDonHang" />
+                            <!-- Nút submit ẩn đi -->
+                            <button type="submit" style="display:none;"></button>
+                            <!-- Nút gọi SweetAlert -->
+                            <button type="button" class="btn btn-sm btn-outline-danger action-button"
+                                    style="background-color:red;color:white;position:relative;overflow:hidden;">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                Hủy đơn hàng
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetStatusDisplayName(TrangThaiDonHang status)
+    {
+        switch (status)
+        {
+            case TrangThaiDonHang.ChoXacNhan:
+                return "Chờ xác nhận";
+            case TrangThaiDonHang.DaXacNhan:
+                return "Đã xác nhận";
+            case TrangThaiDonHang.DangChuanBi:
+                return "Đang chuẩn bị";
+            case TrangThaiDonHang.DangGiaoHang:
+                return "Đang giao hàng";
+            case TrangThaiDonHang.DaGiaoThanhCong:
+                return "Đã giao thành công";
+            case TrangThaiDonHang.DaHuy:
+                return "Đã hủy";
+            case TrangThaiDonHang.HoanTien:
+                return "Hoàn tiền";
+            default:
+                return status.ToString();
+        }
+    }
+
+    public string GetStatusBadgeClass(TrangThaiDonHang status)
+    {
+        switch (status)
+        {
+            case TrangThaiDonHang.ChoXacNhan:
+                return "status-pending";
+            case TrangThaiDonHang.DaXacNhan:
+                return "status-confirmed";
+            case TrangThaiDonHang.DangChuanBi:
+                return "status-preparing";
+            case TrangThaiDonHang.DangGiaoHang:
+                return "status-shipping";
+            case TrangThaiDonHang.DaGiaoThanhCong:
+                return "status-completed";
+            case TrangThaiDonHang.DaHuy:
+            case TrangThaiDonHang.HoanTien:
+                return "status-cancelled";
+            default:
+                return "status-pending";
+        }
+    }
+
+    public string GetPaymentMethodDisplayName(PhuongThucThanhToan method)
+    {
+        switch (method)
+        {
+            case PhuongThucThanhToan.TienMat:
+                return "Tiền mặt";
+            case PhuongThucThanhToan.VNPay:
+                return "VNPay";
+            default:
+                return method.ToString();
+        }
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const huyBtn = document.querySelector('form#huyDonForm .action-button');
+            const huyForm = document.getElementById('huyDonForm');
+
+            huyBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Hiệu ứng ripple
+                let ripple = document.createElement('span');
+                let rect = this.getBoundingClientRect();
+                let size = Math.max(rect.width, rect.height);
+                let x = e.clientX - rect.left - size / 2;
+                let y = e.clientY - rect.top - size / 2;
+
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+
+                // SweetAlert confirm
+                Swal.fire({
+                    title: 'Bạn có chắc chắn muốn hủy đơn hàng này?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Có, hủy ngay!',
+                    cancelButtonText: 'Không'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        huyForm.submit();
+                    }
+                });
+            });
+
+            // Ripple cho các button khác nếu bạn cần (giữ nguyên đoạn code cũ nếu muốn)
+            const buttons = document.querySelectorAll('.action-button, .back-button');
+            buttons.forEach(button => {
+                if(button !== huyBtn) { // tránh thêm 2 lần hiệu ứng cho nút hủy
+                    button.addEventListener('click', function (e) {
+                        let ripple = document.createElement('span');
+                        let rect = this.getBoundingClientRect();
+                        let size = Math.max(rect.width, rect.height);
+                        let x = e.clientX - rect.left - size / 2;
+                        let y = e.clientY - rect.top - size / 2;
+
+                        ripple.style.cssText = `
+                            position: absolute;
+                            width: ${size}px;
+                            height: ${size}px;
+                            left: ${x}px;
+                            top: ${y}px;
+                            background: rgba(255, 255, 255, 0.3);
+                            border-radius: 50%;
+                            transform: scale(0);
+                            animation: ripple 0.6s ease-out;
+                            pointer-events: none;
+                        `;
+
+                        this.style.position = 'relative';
+                        this.style.overflow = 'hidden';
+                        this.appendChild(ripple);
+
+                        setTimeout(() => {
+                            ripple.remove();
+                        }, 600);
+                    });
+                }
+            });
+
+            // Hover effect cho product rows giữ nguyên nếu cần
+            const productRows = document.querySelectorAll('.product-table tbody tr');
+            productRows.forEach(row => {
+                row.addEventListener('mouseenter', function () {
+                    this.style.backgroundColor = 'rgba(255, 107, 53, 0.02)';
+                    this.style.transform = 'translateX(5px)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+
+                row.addEventListener('mouseleave', function () {
+                    this.style.backgroundColor = '';
+                    this.style.transform = '';
+                });
+            });
+        });
+    </script>
+}

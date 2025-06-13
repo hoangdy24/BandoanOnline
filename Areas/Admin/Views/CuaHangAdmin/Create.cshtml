@@ -1,0 +1,173 @@
+﻿@model QlW_BandoanOnline.Models.CuaHang
+@{
+    ViewData["Title"] = "Thêm cửa hàng";
+}
+<link href="~/css/Admin/CuaHang/ThemCuaHang.css" rel="stylesheet" />
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-plus-circle"></i>
+            @ViewData["Title"]
+        </h1>
+        <div class="breadcrumb">
+            <div class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Trang chủ</a></div>
+            <div class="breadcrumb-item"><a asp-action="Index">Cửa hàng</a></div>
+            <div class="breadcrumb-item active">Thêm mới</div>
+        </div>
+    </div>
+
+    <!-- Hiển thị thông báo -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fas fa-store"></i>
+                Thông tin cửa hàng
+            </div>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" id="storeForm">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label asp-for="TenCuaHang" class="form-label">Tên Cửa Hàng</label>
+                    <input asp-for="TenCuaHang" class="form-control" placeholder="Nhập tên cửa hàng" />
+                    <span asp-validation-for="TenCuaHang" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="DiaChi" class="form-label">Địa Chỉ Cửa Hàng</label>
+                    <input asp-for="DiaChi" class="form-control" placeholder="Nhập địa chỉ cửa hàng" />
+                    <span asp-validation-for="DiaChi" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SoDienThoai" class="form-label">Số Điện Thoại Cửa Hàng</label>
+                    <input asp-for="SoDienThoai" class="form-control" placeholder="Nhập số điện thoại liên hệ" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Giờ hoạt động</label>
+                    <div class="input-group">
+                        <div class="time-picker">
+                            <label asp-for="GioMoCua" class="form-label">Giờ Mở Cửa</label>
+                            <input asp-for="GioMoCua" type="time" class="form-control" />
+                            <span asp-validation-for="GioMoCua" class="text-danger"></span>
+                        </div>
+                        <div class="time-picker">
+                            <label asp-for="GioDongCua" class="form-label">Giờ Đóng Cửa</label>
+                            <input asp-for="GioDongCua" type="time" class="form-control" />
+                            <span asp-validation-for="GioDongCua" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <a asp-action="Index" class="btn btn-secondary" style="text-decoration: none;">
+                        <i class="fas fa-times"></i>
+                        Hủy bỏ
+                    </a>
+                    <button type="submit" class="btn btn-primary submit-animation" id="submitBtn">
+                        <span>
+                            <i class="fas fa-save"></i>
+                            Lưu cửa hàng
+                        </span>
+                        <div class="circles">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+@section Scripts {
+    <script>
+        // Toggle sidebar
+        document.getElementById('toggleMenu').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.main-content').style.marginLeft =
+                document.querySelector('.sidebar').classList.contains('active') ? '240px' : '0';
+        });
+
+        // Form animations
+        const formGroups = document.querySelectorAll('.form-group');
+        formGroups.forEach((group, index) => {
+            setTimeout(() => {
+                group.style.animation = `fadeInUp 0.5s ease forwards`;
+            }, 300 + (index * 100));
+        });
+
+        // Food icons animation
+        const foodIcons = [
+            '🍔', '🍕', '🍟', '🌭', '🍗', '🥪', '🌮', '🍦', '🥤', '🍩'
+        ];
+
+        const foodIconsContainer = document.getElementById('foodIcons');
+
+        function createFoodIcon() {
+            const icon = document.createElement('div');
+            icon.classList.add('food-icon');
+            icon.textContent = foodIcons[Math.floor(Math.random() * foodIcons.length)];
+
+            // Random position
+            const posX = Math.random() * window.innerWidth;
+            const posY = Math.random() * window.innerHeight;
+
+            // Random size
+            const size = 20 + Math.random() * 30;
+
+            // Set styles
+            icon.style.left = `${posX}px`;
+            icon.style.top = `${posY}px`;
+            icon.style.fontSize = `${size}px`;
+
+            // Append to container
+            foodIconsContainer.appendChild(icon);
+
+            // Animate
+            setTimeout(() => {
+                icon.style.opacity = '0.8';
+                icon.style.transition = 'all 1s ease';
+                icon.style.transform = 'translateY(-100px) rotate(360deg)';
+                icon.style.opacity = '0';
+            }, 100);
+
+            // Remove after animation
+            setTimeout(() => {
+                foodIconsContainer.removeChild(icon);
+            }, 5000);
+        }
+
+        // Create food icons periodically
+        setInterval(createFoodIcon, 1000);
+
+        // Form submission
+        document.getElementById('storeForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+            // Create multiple food icons on submission
+            for (let i = 0; i < 20; i++) {
+                setTimeout(createFoodIcon, i * 100);
+            }
+        });
+    </script>
+}

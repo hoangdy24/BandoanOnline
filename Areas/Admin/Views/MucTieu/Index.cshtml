@@ -1,0 +1,49 @@
+﻿@model MucTieuDoanhThu
+<link href="~/css/Admin/KhuyenMai/KhuyenMaiAdmin.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Mục Tiêu Kinh Doanh";
+}
+
+<div class="header">
+    <div class="welcome-section">
+        <h1 class="welcome-title">Mục Tiêu Kinh Doanh</h1>
+        <p class="welcome-subtitle">Thiết lập các mục tiêu cho doanh nghiệp của bạn</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fas fa-bullseye"></i> Thiết lập mục tiêu
+        </div>
+    </div>
+    <div class="card-body">
+        <form asp-action="Update" method="post">
+            <div class="form-group">
+                <label asp-for="RevenueTarget">Mục tiêu doanh thu (VNĐ)</label>
+                <input asp-for="RevenueTarget" class="form-control" />
+                <span asp-validation-for="RevenueTarget" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="NewCustomerTarget">Mục tiêu khách hàng mới</label>
+                <input asp-for="NewCustomerTarget" class="form-control" />
+                <span asp-validation-for="NewCustomerTarget" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="OrderTarget">Mục tiêu đơn hàng</label>
+                <input asp-for="OrderTarget" class="form-control" />
+                <span asp-validation-for="OrderTarget" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PositiveReviewTarget">Mục tiêu đánh giá tích cực (%)</label>
+                <input asp-for="PositiveReviewTarget" class="form-control" />
+                <span asp-validation-for="PositiveReviewTarget" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Cập nhật mục tiêu</button>
+        </form>
+    </div>
+</div>

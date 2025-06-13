@@ -1,0 +1,114 @@
+﻿@using QlW_BandoanOnline.Areas.Admin.Models.ViewModels
+<link href="~/css/Admin/NhanVien/Create.css" rel="stylesheet" />
+@model TaoNhanVienViewModel
+
+@{
+    ViewData["Title"] = "Thêm nhân viên mới";
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4>Thêm nhân viên mới</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="MaNhanVien" class="control-label"></label>
+                        <input asp-for="MaNhanVien" class="form-control" />
+                        <span asp-validation-for="MaNhanVien" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="HoTen" class="control-label"></label>
+                        <input asp-for="HoTen" class="form-control" />
+                        <span asp-validation-for="HoTen" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="CCCD" class="control-label"></label>
+                        <input asp-for="CCCD" class="form-control" />
+                        <span asp-validation-for="CCCD" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="ChucVu" class="control-label"></label>
+                        <input asp-for="ChucVu" class="form-control" />
+                        <span asp-validation-for="ChucVu" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="CuaHangId" class="control-label"></label>
+                        <select asp-for="CuaHangId" asp-items="Model.CuaHangOptions" class="form-control">
+                            <option value="">-- Chọn cửa hàng --</option>
+                        </select>
+                        <span asp-validation-for="CuaHangId" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="NgayBatDauLam" class="control-label"></label>
+                        <input asp-for="NgayBatDauLam" type="date" class="form-control" />
+                        <span asp-validation-for="NgayBatDauLam" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="SoDienThoai" class="control-label"></label>
+                        <input asp-for="SoDienThoai" class="form-control" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Password" class="control-label"></label>
+                        <input asp-for="Password" type="password" class="form-control" required />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ConfirmPassword" class="control-label"></label>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control" required />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label asp-for="Role" class="control-label"></label>
+                        <select asp-for="Role" asp-items="Model.RoleOptions" class="form-control">
+                            <option value="">-- Chọn vai trò --</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group form-check">
+                <input class="form-check-input" asp-for="DangLamViec" />
+                <label class="form-check-label" asp-for="DangLamViec"></label>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Tạo mới" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

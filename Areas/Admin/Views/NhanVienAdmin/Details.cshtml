@@ -1,0 +1,316 @@
+﻿@model QlW_BandoanOnline.Models.NhanVien
+@{
+    ViewData["Title"] = "Chi tiết nhân viên";
+}
+<link href="~/css/Admin/NhanVien/Details.css" rel="stylesheet" />
+<div class="header">
+    <div class="welcome-section">
+        <h1 class="welcome-title">Chi tiết nhân viên</h1>
+        <p class="welcome-subtitle">Thông tin chi tiết về nhân viên và hiệu suất làm việc</p>
+    </div>
+</div>
+
+<!-- Page Title -->
+<div class="page-title">
+    <i class="fas fa-user-circle"></i> Chi tiết nhân viên
+</div>
+
+<!-- Employee Detail Container -->
+<div class="employee-detail-container">
+    <!-- Employee Profile Header -->
+    <div class="employee-profile-header">
+        <div class="employee-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="employee-name-title">
+            <h2>@Model.HoTen</h2>
+            <div class="employee-position">@Model.ChucVu</div>
+            <div class="employee-status">
+                @if (Model.DangLamViec)
+                {
+                    <span class="status-badge status-active">Đang làm việc</span>
+                }
+                else
+                {
+                    <span class="status-badge status-inactive">Đã nghỉ việc</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Stats -->
+    @*
+    <div class="employee-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-value">95%</div>
+            <div class="stat-label">Tỷ lệ chuyên cần</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-value">4.8</div>
+            <div class="stat-label">Đánh giá trung bình</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-value">124</div>
+            <div class="stat-label">Giờ làm việc/tháng</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-value">520</div>
+            <div class="stat-label">Khách hàng phục vụ</div>
+        </div>
+    </div>*@
+
+    <!-- Employee Detail Sections -->
+    <div class="employee-detail-sections">
+        <!-- Personal Information -->
+        <div class="detail-section">
+            <h3 class="section-title"><i class="fas fa-user"></i> Thông tin cá nhân</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Họ và tên:</label>
+                    <span>@Model.HoTen</span>
+                </div>
+                <div class="detail-item">
+                    <label>Số điện thoại:</label>
+                    <span>@Model.SoDienThoai</span>
+                </div>
+                <div class="detail-item">
+                    <label>Email:</label>
+                    <span>@Model.Email</span>
+                </div>
+                <div class="detail-item">
+                    <label>CMND/CCCD:</label>
+                    <span>@Model.CCCD</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Information -->
+        <div class="detail-section">
+            <h3 class="section-title"><i class="fas fa-briefcase"></i> Thông tin công việc</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Mã nhân viên:</label>
+                    <span>@Model.MaNhanVien</span>
+                </div>
+                <div class="detail-item">
+                    <label>Chức vụ:</label>
+                    <span>@Model.ChucVu</span>
+                </div>
+                <div class="detail-item">
+                    <label>Cửa hàng:</label>
+                    <span>@Model.CuaHang?.TenCuaHang</span>
+                </div>
+                <div class="detail-item">
+                    <label>Ngày vào làm:</label>
+                    <span>@Model.NgayBatDauLam.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="detail-item">
+                    <label>Trạng thái:</label>
+                    <span>@(Model.DangLamViec ? "Đang làm việc" : "Đã nghỉ việc")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a asp-action="Edit" asp-route-id="@Model.NhanVienId" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Chỉnh sửa thông tin
+        </a>
+        <a asp-action="Index" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Đặt toàn bộ code JavaScript ở đây
+        document.addEventListener('DOMContentLoaded', function() {
+                    document.addEventListener('DOMContentLoaded', function() {
+            // 1. Khởi tạo biểu đồ hiệu suất
+            initPerformanceChart();
+
+            // 2. Xử lý sự kiện cho các nút lọc
+            setupFilterButtons();
+
+            // 3. Xử lý menu dropdown trên mobile
+            setupMobileMenu();
+
+            // 4. Hiệu ứng animation khi load trang
+            setupPageAnimations();
+
+            // 5. Xử lý sự kiện cho các nút action
+            setupActionButtons();
+        });
+
+        // Khởi tạo biểu đồ hiệu suất
+        function initPerformanceChart() {
+            const ctx = document.getElementById('performanceChart');
+            if (!ctx) return;
+
+            const performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+                    datasets: [{
+                        label: 'Hiệu suất làm việc',
+                        data: [85, 89, 92, 95],
+                        backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                        borderColor: '#17a2b8',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#17a2b8',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 70,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Hiệu suất: ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Xử lý các nút lọc dữ liệu
+        function setupFilterButtons() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Xóa class active khỏi tất cả các nút
+                    filterBtns.forEach(b => b.classList.remove('active'));
+
+                    // Thêm class active cho nút được click
+                    this.classList.add('active');
+
+                    // Lấy loại filter (tuần/tháng/quý)
+                    const filterType = this.textContent.trim().toLowerCase();
+
+                    // Gọi hàm cập nhật dữ liệu theo filter
+                    updateChartData(filterType);
+                });
+            });
+        }
+
+        // Cập nhật dữ liệu biểu đồ theo filter
+        function updateChartData(filterType) {
+            // Đây là dữ liệu mẫu, trong thực tế bạn sẽ gọi API hoặc xử lý dữ liệu thực
+            const sampleData = {
+                'tuần': [85, 89, 92, 95],
+                'tháng': [82, 85, 88, 90, 92, 95],
+                'quý': [80, 85, 90, 95]
+            };
+
+            const labels = {
+                'tuần': ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+                'tháng': ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
+                'quý': ['Quý 1', 'Quý 2', 'Quý 3', 'Quý 4']
+            };
+
+            const chart = Chart.getChart('performanceChart');
+            if (chart) {
+                chart.data.labels = labels[filterType] || labels['tuần'];
+                chart.data.datasets[0].data = sampleData[filterType] || sampleData['tuần'];
+                chart.update();
+            }
+        }
+
+        // Xử lý menu dropdown trên mobile
+        function setupMobileMenu() {
+            const menuToggles = document.querySelectorAll('.has-submenu > a');
+
+            menuToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) { // Chỉ áp dụng trên mobile
+                        e.preventDefault();
+                        const submenu = this.nextElementSibling;
+                        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+                    }
+                });
+            });
+        }
+
+        // Hiệu ứng animation khi load trang
+        function setupPageAnimations() {
+            const sections = document.querySelectorAll('.detail-section, .employee-stats, .performance-chart');
+
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+                setTimeout(() => {
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, 100 + (index * 100));
+            });
+        }
+
+        // Xử lý sự kiện cho các nút action
+        function setupActionButtons() {
+            // Nút xuất báo cáo PDF
+            const exportPdfBtn = document.querySelector('.btn-export-pdf');
+            if (exportPdfBtn) {
+                exportPdfBtn.addEventListener('click', function() {
+                    // Gọi API export PDF hoặc chuyển hướng
+                    window.location.href = this.dataset.exportUrl;
+                });
+            }
+
+            // Nút gửi thông báo
+            const sendNotificationBtn = document.querySelector('.btn-send-notification');
+            if (sendNotificationBtn) {
+                sendNotificationBtn.addEventListener('click', function() {
+                    // Hiển thị modal gửi thông báo
+                    showNotificationModal();
+                });
+            }
+        }
+
+        // Hiển thị modal gửi thông báo (ví dụ)
+        function showNotificationModal() {
+            // Code để hiển thị modal
+            console.log('Mở modal gửi thông báo');
+        }
+        });
+    </script>
+}
